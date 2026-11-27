@@ -1,0 +1,11 @@
+# Données sensibles : ne jamais committer
+secrets/
+*.env
+.env*
+*.key
+*.pem
+
+# Fichiers temporaires
+__pycache__/
+*.pyc
+node_modules/
