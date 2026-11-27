@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ecommerce-r-27-11-2026
+  labels:
+    projet: e5-r-27-11-2026
+    client: ecommerce
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/warn: restricted

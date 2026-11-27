@@ -1,0 +1,8 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
