@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: redis-r-27-11-2026, tier: cache}
+data:
+  redis.conf: |
+    # Persistance : journal AOF écrit sur disque chaque seconde
+    appendonly yes
+    appendfsync everysec
+    save ""
+    dir /data
+    # Mémoire limitée ; seules les clés avec expiration (paniers) peuvent être évincées
+    maxmemory 48mb
+    maxmemory-policy volatile-lru
+    # Commandes dangereuses désactivées
+    rename-command FLUSHALL ""
+    rename-command FLUSHDB ""
+    rename-command CONFIG ""

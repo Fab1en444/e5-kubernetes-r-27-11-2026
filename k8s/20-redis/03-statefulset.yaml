@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: redis-r-27-11-2026, tier: cache}
+spec:
+  serviceName: redis-r-27-11-2026
+  replicas: 1
+  selector:
+    matchLabels: {app: redis-r-27-11-2026}
+  template:
+    metadata:
+      labels: {app: redis-r-27-11-2026, tier: cache}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+      - name: redis
+        image: redis:7.2-alpine
+        args: ["redis-server", "/etc/redis/redis.conf", "--requirepass", "$(REDIS_PASSWORD)"]
+        ports:
+        - {name: redis, containerPort: 6379}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: {drop: [ALL]}
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom: {secretKeyRef: {name: redis-secret-r-27-11-2026, key: REDIS_PASSWORD}}
+        - name: REDISCLI_AUTH
+          valueFrom: {secretKeyRef: {name: redis-secret-r-27-11-2026, key: REDIS_PASSWORD}}
+        readinessProbe:
+          exec: {command: ["sh", "-c", "redis-cli ping | grep -q PONG"]}
+          periodSeconds: 10
+        livenessProbe:
+          exec: {command: ["sh", "-c", "redis-cli ping | grep -q PONG"]}
+          initialDelaySeconds: 10
+          periodSeconds: 20
+        resources:
+          requests: {cpu: 25m, memory: 48Mi}
+          limits: {cpu: 200m, memory: 96Mi}
+        volumeMounts:
+        - {name: data, mountPath: /data}
+        - {name: config, mountPath: /etc/redis}
+      volumes:
+      - name: config
+        configMap: {name: redis-config-r-27-11-2026}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      labels: {app: redis-r-27-11-2026}
+    spec:
+      accessModes: [ReadWriteOnce]
+      resources:
+        requests: {storage: 1Gi}

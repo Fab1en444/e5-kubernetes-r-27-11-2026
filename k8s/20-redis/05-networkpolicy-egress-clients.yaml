@@ -1,0 +1,15 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redis-clients-egress-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  podSelector:
+    matchLabels: {acces-redis: "true"}
+  policyTypes: [Egress]
+  egress:
+  - to:
+    - podSelector:
+        matchLabels: {app: redis-r-27-11-2026}
+    ports:
+    - {protocol: TCP, port: 6379}
