@@ -1,0 +1,81 @@
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     Started server process [1]
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     Waiting for application startup.
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     Application startup complete.
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     192.168.49.2:33200 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     192.168.49.2:33210 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     192.168.49.2:34346 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     192.168.49.2:34352 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     192.168.49.2:33528 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     192.168.49.2:43664 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     192.168.49.2:43668 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     192.168.49.2:40442 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     192.168.49.2:44616 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     192.168.49.2:44630 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     192.168.49.2:51908 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     10.244.108.208:55796 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     10.244.108.208:55806 - "POST /paniers/demo123/articles HTTP/1.1" 201 Created
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     10.244.108.208:55828 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     10.244.108.208:55832 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     192.168.49.2:42500 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     192.168.49.2:42506 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     192.168.49.2:44672 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     192.168.49.2:50998 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     192.168.49.2:51012 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     192.168.49.2:57500 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     192.168.49.2:42790 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     192.168.49.2:42792 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-2qhf6/panier-api] INFO:     192.168.49.2:43806 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     Started server process [1]
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     Waiting for application startup.
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     Application startup complete.
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     192.168.49.2:49004 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     192.168.49.2:49016 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     192.168.49.2:42992 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     192.168.49.2:43008 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     192.168.49.2:33866 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     192.168.49.2:44986 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     192.168.49.2:45000 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     192.168.49.2:42852 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     192.168.49.2:32838 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     192.168.49.2:32846 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     192.168.49.2:57984 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     10.244.108.208:55822 - "POST /paniers/demo123/articles HTTP/1.1" 201 Created
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     10.244.108.208:55834 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     10.244.108.208:55848 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     10.244.108.208:55850 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     192.168.49.2:36804 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     192.168.49.2:36810 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     192.168.49.2:48326 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     192.168.49.2:39368 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     192.168.49.2:39384 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     192.168.49.2:46324 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     192.168.49.2:52494 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     192.168.49.2:52502 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-52fhz/panier-api] INFO:     192.168.49.2:60458 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-kfzsv/panier-api] INFO:     Started server process [1]
+[pod/panier-api-r-27-11-2026-699c9954-kfzsv/panier-api] INFO:     Waiting for application startup.
+[pod/panier-api-r-27-11-2026-699c9954-kfzsv/panier-api] INFO:     Application startup complete.
+[pod/panier-api-r-27-11-2026-699c9954-kfzsv/panier-api] INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+[pod/panier-api-r-27-11-2026-699c9954-kfzsv/panier-api] INFO:     192.168.49.2:54342 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-kfzsv/panier-api] INFO:     192.168.49.2:54348 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-kfzsv/panier-api] INFO:     192.168.49.2:37504 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-kfzsv/panier-api] INFO:     192.168.49.2:37508 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-kfzsv/panier-api] INFO:     192.168.49.2:39948 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-kfzsv/panier-api] INFO:     192.168.49.2:42314 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-kfzsv/panier-api] INFO:     192.168.49.2:42324 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-kfzsv/panier-api] INFO:     192.168.49.2:34676 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-kfzsv/panier-api] INFO:     192.168.49.2:40188 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-kfzsv/panier-api] INFO:     192.168.49.2:40198 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-kfzsv/panier-api] INFO:     192.168.49.2:38932 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-kfzsv/panier-api] INFO:     10.244.108.208:55824 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-kfzsv/panier-api] INFO:     192.168.49.2:51864 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-kfzsv/panier-api] INFO:     192.168.49.2:51878 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-kfzsv/panier-api] INFO:     192.168.49.2:45340 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-kfzsv/panier-api] INFO:     192.168.49.2:41832 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-kfzsv/panier-api] INFO:     192.168.49.2:41836 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-kfzsv/panier-api] INFO:     192.168.49.2:51150 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-kfzsv/panier-api] INFO:     192.168.49.2:46540 - "GET /readyz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-kfzsv/panier-api] INFO:     192.168.49.2:46554 - "GET /healthz HTTP/1.1" 200 OK
+[pod/panier-api-r-27-11-2026-699c9954-kfzsv/panier-api] INFO:     192.168.49.2:48654 - "GET /readyz HTTP/1.1" 200 OK

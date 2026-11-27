@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: panier-api-config-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: panier-api-r-27-11-2026, tier: api}
+data:
+  REDIS_HOST: redis-r-27-11-2026
+  REDIS_PORT: "6379"
+  PANIER_TTL_SECONDES: "86400"

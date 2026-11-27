@@ -1,0 +1,119 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 694B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/python:3.12-slim
+#2 DONE 0.8s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 59B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 2.80kB done
+#4 DONE 0.0s
+
+#5 [builder 1/4] FROM docker.io/library/python:3.12-slim@sha256:191083cdf6c7bda8c76158983163ead5d5cf7b77cf3033e805bb0f5296f51b4b
+#5 resolve docker.io/library/python:3.12-slim@sha256:191083cdf6c7bda8c76158983163ead5d5cf7b77cf3033e805bb0f5296f51b4b done
+#5 DONE 0.0s
+
+#6 [builder 2/4] WORKDIR /app
+#6 CACHED
+
+#7 [builder 3/4] COPY requirements.txt .
+#7 DONE 0.0s
+
+#8 [builder 4/4] RUN python -m venv /venv && /venv/bin/pip install --no-cache-dir -r requirements.txt
+#8 2.629 Collecting fastapi==0.115.12 (from -r requirements.txt (line 1))
+#8 2.778   Downloading fastapi-0.115.12-py3-none-any.whl.metadata (27 kB)
+#8 2.834 Collecting uvicorn==0.34.2 (from uvicorn[standard]==0.34.2->-r requirements.txt (line 2))
+#8 2.843   Downloading uvicorn-0.34.2-py3-none-any.whl.metadata (6.5 kB)
+#8 2.865 Collecting redis==5.2.1 (from -r requirements.txt (line 3))
+#8 2.872   Downloading redis-5.2.1-py3-none-any.whl.metadata (9.1 kB)
+#8 2.924 Collecting starlette<0.47.0,>=0.40.0 (from fastapi==0.115.12->-r requirements.txt (line 1))
+#8 2.931   Downloading starlette-0.46.2-py3-none-any.whl.metadata (6.2 kB)
+#8 3.019 Collecting pydantic!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0,>=1.7.4 (from fastapi==0.115.12->-r requirements.txt (line 1))
+#8 3.026   Downloading pydantic-2.14.4-py3-none-any.whl.metadata (143 kB)
+#8 3.057 Collecting typing-extensions>=4.8.0 (from fastapi==0.115.12->-r requirements.txt (line 1))
+#8 3.064   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+#8 3.081 Collecting click>=7.0 (from uvicorn==0.34.2->uvicorn[standard]==0.34.2->-r requirements.txt (line 2))
+#8 3.088   Downloading click-8.5.1-py3-none-any.whl.metadata (2.6 kB)
+#8 3.099 Collecting h11>=0.8 (from uvicorn==0.34.2->uvicorn[standard]==0.34.2->-r requirements.txt (line 2))
+#8 3.105   Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+#8 3.129 Collecting httptools>=0.6.3 (from uvicorn[standard]==0.34.2->-r requirements.txt (line 2))
+#8 3.136   Downloading httptools-0.9.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (3.5 kB)
+#8 3.150 Collecting python-dotenv>=0.13 (from uvicorn[standard]==0.34.2->-r requirements.txt (line 2))
+#8 3.156   Downloading python_dotenv-1.2.4-py3-none-any.whl.metadata (29 kB)
+#8 3.190 Collecting pyyaml>=5.1 (from uvicorn[standard]==0.34.2->-r requirements.txt (line 2))
+#8 3.198   Downloading pyyaml-6.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.3 kB)
+#8 3.231 Collecting uvloop!=0.15.0,!=0.15.1,>=0.14.0 (from uvicorn[standard]==0.34.2->-r requirements.txt (line 2))
+#8 3.238   Downloading uvloop-0.23.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (5.1 kB)
+#8 3.282 Collecting watchfiles>=0.13 (from uvicorn[standard]==0.34.2->-r requirements.txt (line 2))
+#8 3.290   Downloading watchfiles-1.3.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.9 kB)
+#8 3.363 Collecting websockets>=10.4 (from uvicorn[standard]==0.34.2->-r requirements.txt (line 2))
+#8 3.370   Downloading websockets-17.4-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (6.3 kB)
+#8 3.383 Collecting annotated-types>=0.6.0 (from pydantic!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0,>=1.7.4->fastapi==0.115.12->-r requirements.txt (line 1))
+#8 3.390   Downloading annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+#8 3.795 Collecting pydantic-core==2.50.5 (from pydantic!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0,>=1.7.4->fastapi==0.115.12->-r requirements.txt (line 1))
+#8 3.802   Downloading pydantic_core-2.50.5-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (6.6 kB)
+#8 3.815 Collecting typing-inspection>=0.4.4 (from pydantic!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0,>=1.7.4->fastapi==0.115.12->-r requirements.txt (line 1))
+#8 3.822   Downloading typing_inspection-0.4.5-py3-none-any.whl.metadata (2.6 kB)
+#8 3.840 Collecting anyio<5,>=3.6.2 (from starlette<0.47.0,>=0.40.0->fastapi==0.115.12->-r requirements.txt (line 1))
+#8 3.847   Downloading anyio-4.16.0-py3-none-any.whl.metadata (4.7 kB)
+#8 3.867 Collecting idna>=2.8 (from anyio<5,>=3.6.2->starlette<0.47.0,>=0.40.0->fastapi==0.115.12->-r requirements.txt (line 1))
+#8 3.874   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+#8 3.886 Downloading fastapi-0.115.12-py3-none-any.whl (95 kB)
+#8 3.895 Downloading uvicorn-0.34.2-py3-none-any.whl (62 kB)
+#8 3.903 Downloading redis-5.2.1-py3-none-any.whl (261 kB)
+#8 3.917 Downloading click-8.5.1-py3-none-any.whl (126 kB)
+#8 3.926 Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+#8 3.932 Downloading httptools-0.9.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (552 kB)
+#8 3.949    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 552.8/552.8 kB 35.4 MB/s eta 0:00:00
+#8 3.955 Downloading pydantic-2.14.4-py3-none-any.whl (494 kB)
+#8 3.973 Downloading pydantic_core-2.50.5-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (2.3 MB)
+#8 4.016    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.3/2.3 MB 55.8 MB/s eta 0:00:00
+#8 4.023 Downloading python_dotenv-1.2.4-py3-none-any.whl (23 kB)
+#8 4.031 Downloading pyyaml-6.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (849 kB)
+#8 4.044    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 849.2/849.2 kB 62.7 MB/s eta 0:00:00
+#8 4.052 Downloading starlette-0.46.2-py3-none-any.whl (72 kB)
+#8 4.057 Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+#8 4.064 Downloading uvloop-0.23.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (4.5 MB)
+#8 4.113    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.5/4.5 MB 94.1 MB/s eta 0:00:00
+#8 4.120 Downloading watchfiles-1.3.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (458 kB)
+#8 4.130 Downloading websockets-17.4-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (226 kB)
+#8 4.137 Downloading annotated_types-0.8.0-py3-none-any.whl (13 kB)
+#8 4.144 Downloading anyio-4.16.0-py3-none-any.whl (134 kB)
+#8 4.151 Downloading typing_inspection-0.4.5-py3-none-any.whl (14 kB)
+#8 4.157 Downloading idna-3.20-py3-none-any.whl (69 kB)
+#8 4.195 Installing collected packages: websockets, uvloop, typing-extensions, redis, pyyaml, python-dotenv, idna, httptools, h11, click, annotated-types, uvicorn, typing-inspection, pydantic-core, anyio, watchfiles, starlette, pydantic, fastapi
+#8 5.134 Successfully installed annotated-types-0.8.0 anyio-4.16.0 click-8.5.1 fastapi-0.115.12 h11-0.16.0 httptools-0.9.0 idna-3.20 pydantic-2.14.4 pydantic-core-2.50.5 python-dotenv-1.2.4 pyyaml-6.0.4 redis-5.2.1 starlette-0.46.2 typing-extensions-4.16.0 typing-inspection-0.4.5 uvicorn-0.34.2 uvloop-0.23.0 watchfiles-1.3.0 websockets-17.4
+#8 5.193 
+#8 5.193 [notice] A new release of pip is available: 25.0.1 -> 26.3
+#8 5.193 [notice] To update, run: python -m pip install --upgrade pip
+#8 DONE 5.3s
+
+#9 [stage-1 2/5] RUN useradd -r -u 10001 appuser
+#9 CACHED
+
+#10 [stage-1 3/5] WORKDIR /app
+#10 CACHED
+
+#11 [stage-1 4/5] COPY --from=builder /venv /venv
+#11 DONE 0.3s
+
+#12 [stage-1 5/5] COPY main.py .
+#12 DONE 0.0s
+
+#13 exporting to image
+#13 exporting layers
+#13 exporting layers 1.4s done
+#13 exporting manifest sha256:30842a80663473ce60382398a195058aa761bb45e78f28577d866172ef74364c done
+#13 exporting config sha256:639e8ac42b66ef91fb810464ee25f1ab9425ad8dd77b45b50715adc009e4baca done
+#13 exporting attestation manifest sha256:d238d959af9f0462bda5302bd787c7b40503869f9b9c1f32e1c793bd5d1f6704 done
+#13 exporting manifest list sha256:ad4a6e678813e47a9c791588fe1bc2bdc313fbb47c48cfda700aadb997eda695 done
+#13 naming to localhost:5000/panier-api-r-27-11-2026:1.0 done
+#13 unpacking to localhost:5000/panier-api-r-27-11-2026:1.0
+#13 unpacking to localhost:5000/panier-api-r-27-11-2026:1.0 1.1s done
+#13 DONE 2.5s
