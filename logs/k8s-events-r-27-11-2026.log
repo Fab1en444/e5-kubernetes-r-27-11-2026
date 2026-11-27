@@ -1,0 +1,27 @@
+LAST SEEN   TYPE      REASON             OBJECT                                        MESSAGE
+8m14s       Normal    SuccessfulCreate   replicaset/boutique-r-27-11-2026-7db5977fb4   Created pod: boutique-r-27-11-2026-7db5977fb4-xxrwh
+8m14s       Normal    Killing            pod/boutique-r-27-11-2026-7db5977fb4-k7r28    Stopping container boutique
+8m14s       Normal    Killing            pod/boutique-r-27-11-2026-7db5977fb4-594hj    Stopping container boutique
+8m13s       Normal    Killing            pod/panier-api-r-27-11-2026-699c9954-2qhf6    Stopping container panier-api
+8m13s       Normal    Pulled             pod/boutique-r-27-11-2026-7db5977fb4-n4dtv    Container image "localhost:5000/boutique-r-27-11-2026:1.0" already present on machine and can be accessed by the pod
+8m13s       Normal    Scheduled          pod/boutique-r-27-11-2026-7db5977fb4-n4dtv    Successfully assigned ecommerce-r-27-11-2026/boutique-r-27-11-2026-7db5977fb4-n4dtv to cluster-r-27-11-2026
+8m13s       Normal    Scheduled          pod/boutique-r-27-11-2026-7db5977fb4-xxrwh    Successfully assigned ecommerce-r-27-11-2026/boutique-r-27-11-2026-7db5977fb4-xxrwh to cluster-r-27-11-2026
+8m13s       Normal    Scheduled          pod/panier-api-r-27-11-2026-699c9954-s5w4b    Successfully assigned ecommerce-r-27-11-2026/panier-api-r-27-11-2026-699c9954-s5w4b to cluster-r-27-11-2026
+8m13s       Normal    SuccessfulCreate   replicaset/panier-api-r-27-11-2026-699c9954   Created pod: panier-api-r-27-11-2026-699c9954-s5w4b
+8m13s       Normal    SuccessfulCreate   replicaset/boutique-r-27-11-2026-7db5977fb4   Created pod: boutique-r-27-11-2026-7db5977fb4-n4dtv
+8m12s       Normal    Pulled             pod/boutique-r-27-11-2026-7db5977fb4-xxrwh    Container image "localhost:5000/boutique-r-27-11-2026:1.0" already present on machine and can be accessed by the pod
+8m12s       Normal    Started            pod/boutique-r-27-11-2026-7db5977fb4-xxrwh    Container started
+8m12s       Normal    Created            pod/boutique-r-27-11-2026-7db5977fb4-xxrwh    Container created
+8m12s       Normal    Started            pod/panier-api-r-27-11-2026-699c9954-s5w4b    Container started
+8m12s       Normal    Created            pod/panier-api-r-27-11-2026-699c9954-s5w4b    Container created
+8m12s       Normal    Pulled             pod/panier-api-r-27-11-2026-699c9954-s5w4b    Container image "localhost:5000/panier-api-r-27-11-2026:1.0" already present on machine and can be accessed by the pod
+8m12s       Normal    Created            pod/boutique-r-27-11-2026-7db5977fb4-n4dtv    Container created
+8m12s       Normal    Started            pod/boutique-r-27-11-2026-7db5977fb4-n4dtv    Container started
+8m10s       Warning   Unhealthy          pod/panier-api-r-27-11-2026-699c9954-s5w4b    Startup probe failed: Get "http://10.244.108.225:8000/healthz": dial tcp 10.244.108.225:8000: connect: connection refused
+8m7s        Warning   Unhealthy          pod/panier-api-r-27-11-2026-699c9954-2qhf6    Readiness probe failed: Get "http://10.244.108.205:8000/readyz": dial tcp 10.244.108.205:8000: connect: connection refused
+7m9s        Normal    Killing            pod/mariadb-r-27-11-2026-0                    Stopping container mariadb
+7m8s        Normal    SuccessfulCreate   statefulset/mariadb-r-27-11-2026              Create Pod mariadb-r-27-11-2026-0 in StatefulSet mariadb-r-27-11-2026 successful
+7m8s        Normal    Scheduled          pod/mariadb-r-27-11-2026-0                    Successfully assigned ecommerce-r-27-11-2026/mariadb-r-27-11-2026-0 to cluster-r-27-11-2026
+7m7s        Normal    Started            pod/mariadb-r-27-11-2026-0                    Container started
+7m7s        Normal    Created            pod/mariadb-r-27-11-2026-0                    Container created
+7m7s        Normal    Pulled             pod/mariadb-r-27-11-2026-0                    Container image "mariadb:10.11" already present on machine and can be accessed by the pod

@@ -1,0 +1,90 @@
+NAME                                           READY   STATUS      RESTARTS   AGE
+pod/backoffice-migrate-r-27-11-2026-hrwzb      0/1     Completed   0          106m
+pod/backoffice-r-27-11-2026-85555fc95f-49vv8   1/1     Running     0          106m
+pod/backoffice-r-27-11-2026-85555fc95f-65hpn   1/1     Running     0          106m
+pod/backoffice-r-27-11-2026-85555fc95f-jb7zc   1/1     Running     0          106m
+pod/boutique-init-db-r-27-11-2026-wk7hb        0/1     Completed   0          123m
+pod/boutique-r-27-11-2026-7db5977fb4-n4dtv     1/1     Running     0          8m22s
+pod/boutique-r-27-11-2026-7db5977fb4-pc9cx     1/1     Running     0          123m
+pod/boutique-r-27-11-2026-7db5977fb4-xxrwh     1/1     Running     0          8m23s
+pod/mariadb-r-27-11-2026-0                     1/1     Running     0          7m17s
+pod/panier-api-r-27-11-2026-699c9954-52fhz     1/1     Running     0          146m
+pod/panier-api-r-27-11-2026-699c9954-kfzsv     1/1     Running     0          146m
+pod/panier-api-r-27-11-2026-699c9954-s5w4b     1/1     Running     0          8m22s
+pod/redis-r-27-11-2026-0                       1/1     Running     0          155m
+
+NAME                              TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
+service/backoffice-r-27-11-2026   ClusterIP   10.106.134.77    <none>        80/TCP     106m
+service/boutique-r-27-11-2026     ClusterIP   10.106.104.243   <none>        80/TCP     123m
+service/mariadb-r-27-11-2026      ClusterIP   None             <none>        3306/TCP   163m
+service/panier-api-r-27-11-2026   ClusterIP   10.97.23.150     <none>        80/TCP     146m
+service/redis-r-27-11-2026        ClusterIP   10.105.216.186   <none>        6379/TCP   155m
+
+NAME                                      READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/backoffice-r-27-11-2026   3/3     3            3           106m
+deployment.apps/boutique-r-27-11-2026     3/3     3            3           123m
+deployment.apps/panier-api-r-27-11-2026   3/3     3            3           146m
+
+NAME                                                 DESIRED   CURRENT   READY   AGE
+replicaset.apps/backoffice-r-27-11-2026-85555fc95f   3         3         3       106m
+replicaset.apps/boutique-r-27-11-2026-7db5977fb4     3         3         3       123m
+replicaset.apps/panier-api-r-27-11-2026-699c9954     3         3         3       146m
+
+NAME                                    READY   AGE
+statefulset.apps/mariadb-r-27-11-2026   1/1     163m
+statefulset.apps/redis-r-27-11-2026     1/1     155m
+
+NAME                                                              REFERENCE                            TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/backoffice-hpa-r-27-11-2026   Deployment/backoffice-r-27-11-2026   cpu: 2%/70%   3         5         3          106m
+horizontalpodautoscaler.autoscaling/boutique-hpa-r-27-11-2026     Deployment/boutique-r-27-11-2026     cpu: 2%/70%   3         5         3          123m
+horizontalpodautoscaler.autoscaling/panier-api-hpa-r-27-11-2026   Deployment/panier-api-r-27-11-2026   cpu: 4%/70%   3         5         3          146m
+
+NAME                                        STATUS     COMPLETIONS   DURATION   AGE
+job.batch/backoffice-migrate-r-27-11-2026   Complete   1/1           10s        106m
+job.batch/boutique-init-db-r-27-11-2026     Complete   1/1           12s        123m
+
+NAME                                                STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+persistentvolumeclaim/data-mariadb-r-27-11-2026-0   Bound    pvc-3fb68287-ab7d-4b4b-8b9a-a2a2040a131a   2Gi        RWO            standard       <unset>                 163m
+persistentvolumeclaim/data-redis-r-27-11-2026-0     Bound    pvc-e69ed54a-54ff-4c51-aa79-2ece4990b4fb   1Gi        RWO            standard       <unset>                 155m
+
+NAME                                       DATA   AGE
+configmap/backoffice-config-r-27-11-2026   7      106m
+configmap/boutique-config-r-27-11-2026     4      123m
+configmap/kube-root-ca.crt                 1      3h
+configmap/mariadb-config-r-27-11-2026      1      163m
+configmap/mariadb-init-r-27-11-2026        1      163m
+configmap/panier-api-config-r-27-11-2026   3      146m
+configmap/redis-config-r-27-11-2026        1      155m
+
+NAME                                        TYPE     DATA   AGE
+secret/backoffice-app-secret-r-27-11-2026   Opaque   2      110m
+secret/backoffice-db-secret-r-27-11-2026    Opaque   3      169m
+secret/boutique-app-secret-r-27-11-2026     Opaque   1      124m
+secret/mariadb-root-secret-r-27-11-2026     Opaque   1      169m
+secret/redis-secret-r-27-11-2026            Opaque   1      156m
+secret/shop-db-secret-r-27-11-2026          Opaque   3      169m
+secret/stripe-secret-r-27-11-2026           Opaque   2      135m
+
+NAME                                                                     POD-SELECTOR                                             AGE
+networkpolicy.networking.k8s.io/allow-dns-r-27-11-2026                   <none>                                                   3h
+networkpolicy.networking.k8s.io/default-deny-r-27-11-2026                <none>                                                   3h
+networkpolicy.networking.k8s.io/from-gateway-r-27-11-2026                app in (backoffice-r-27-11-2026,boutique-r-27-11-2026)   31m
+networkpolicy.networking.k8s.io/mariadb-clients-egress-r-27-11-2026      acces-mariadb=true                                       163m
+networkpolicy.networking.k8s.io/mariadb-ingress-r-27-11-2026             app=mariadb-r-27-11-2026                                 163m
+networkpolicy.networking.k8s.io/panier-api-clients-egress-r-27-11-2026   acces-panier-api=true                                    146m
+networkpolicy.networking.k8s.io/panier-api-ingress-r-27-11-2026          app=panier-api-r-27-11-2026                              146m
+networkpolicy.networking.k8s.io/redis-clients-egress-r-27-11-2026        acces-redis=true                                         155m
+networkpolicy.networking.k8s.io/redis-ingress-r-27-11-2026               app=redis-r-27-11-2026                                   155m
+networkpolicy.networking.k8s.io/stripe-egress-r-27-11-2026               acces-stripe=true                                        123m
+
+NAME                                                     MIN AVAILABLE   MAX UNAVAILABLE   ALLOWED DISRUPTIONS   AGE
+poddisruptionbudget.policy/backoffice-pdb-r-27-11-2026   2               N/A               1                     106m
+poddisruptionbudget.policy/boutique-pdb-r-27-11-2026     2               N/A               1                     123m
+poddisruptionbudget.policy/panier-api-pdb-r-27-11-2026   2               N/A               1                     146m
+
+NAME                                                     CLASS              ADDRESS        PROGRAMMED   AGE
+gateway.gateway.networking.k8s.io/gateway-r-27-11-2026   gwc-r-27-11-2026   192.168.49.2   True         31m
+
+NAME                                                                HOSTNAMES                            AGE
+httproute.gateway.networking.k8s.io/route-backoffice-r-27-11-2026   ["admin.212.227.20.231.nip.io"]      31m
+httproute.gateway.networking.k8s.io/route-boutique-r-27-11-2026     ["boutique.212.227.20.231.nip.io"]   31m

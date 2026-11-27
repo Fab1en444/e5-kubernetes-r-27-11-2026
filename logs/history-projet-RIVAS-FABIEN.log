@@ -1,0 +1,3011 @@
+  926  27/11/2026 09:00:10    name: api-interne
+  927  27/11/2026 09:00:10  spec:
+  928  27/11/2026 09:00:10    replicas: 5
+  929  27/11/2026 09:00:10    selector:
+  930  27/11/2026 09:00:10      matchLabels: {app: api-interne}
+  931  27/11/2026 09:00:10    template:
+  932  27/11/2026 09:00:10      metadata:
+  933  27/11/2026 09:00:10        labels: {app: api-interne}
+  934  27/11/2026 09:00:10      spec:
+  935  27/11/2026 09:00:10        containers:
+  936  27/11/2026 09:00:10        - name: api
+  937  27/11/2026 09:00:10          image: api-interne:1.0
+  938  27/11/2026 09:00:10          imagePullPolicy: Never
+  939  27/11/2026 09:00:10          ports:
+  940  27/11/2026 09:00:10          - containerPort: 3000
+  941  27/11/2026 09:00:10  ---
+  942  27/11/2026 09:00:10  apiVersion: v1
+  943  27/11/2026 09:00:10  kind: Service
+  944  27/11/2026 09:00:10  metadata:
+  945  27/11/2026 09:00:10    name: api-interne
+  946  27/11/2026 09:00:10  spec:
+  947  27/11/2026 09:00:10    type: ClusterIP
+  948  27/11/2026 09:00:10    selector: {app: api-interne}
+  949  27/11/2026 09:00:10    ports:
+  950  27/11/2026 09:00:10    - port: 80
+  951  27/11/2026 09:00:10      targetPort: 3000
+  952  27/11/2026 09:00:10  EOF
+  953  27/11/2026 09:00:10  cat > web-flask.yaml <<'EOF'
+  954  27/11/2026 09:00:10  apiVersion: apps/v1
+  955  27/11/2026 09:00:10  kind: Deployment
+  956  27/11/2026 09:00:10  metadata:
+  957  27/11/2026 09:00:10    name: web-flask
+  958  27/11/2026 09:00:10  spec:
+  959  27/11/2026 09:00:10    replicas: 5
+  960  27/11/2026 09:00:10    selector:
+  961  27/11/2026 09:00:10      matchLabels: {app: web-flask}
+  962  27/11/2026 09:00:10    template:
+  963  27/11/2026 09:00:10      metadata:
+  964  27/11/2026 09:00:10        labels: {app: web-flask}
+  965  27/11/2026 09:00:10      spec:
+  966  27/11/2026 09:00:10        containers:
+  967  27/11/2026 09:00:10        - name: web
+  968  27/11/2026 09:00:10          image: web-flask:1.0
+  969  27/11/2026 09:00:10          imagePullPolicy: Never
+  970  27/11/2026 09:00:10          ports:
+  971  27/11/2026 09:00:10          - containerPort: 5000
+  972  27/11/2026 09:00:10          readinessProbe:
+  973  27/11/2026 09:00:10            httpGet: {path: /health, port: 5000}
+  974  27/11/2026 09:00:10  ---
+  975  27/11/2026 09:00:10  apiVersion: v1
+  976  27/11/2026 09:00:10  kind: Service
+  977  27/11/2026 09:00:10  metadata:
+  978  27/11/2026 09:00:10    name: web-flask
+  979  27/11/2026 09:00:10  spec:
+  980  27/11/2026 09:00:10    type: NodePort
+  981  27/11/2026 09:00:10    selector: {app: web-flask}
+  982  27/11/2026 09:00:10    ports:
+  983  27/11/2026 09:00:10    - port: 80
+  984  27/11/2026 09:00:10      targetPort: 5000
+  985  27/11/2026 09:00:10      nodePort: 30080
+  986  27/11/2026 09:00:10  EOF
+  987  27/11/2026 09:00:10  kubectl apply -f api-interne.yaml -f web-flask.yaml
+  988  27/11/2026 09:00:10  kubectl get deploy,pods,svc -o wide
+  989  27/11/2026 09:00:10  kubectl get deploy
+  990  27/11/2026 09:00:10  kubectl get pods -w
+  991  27/11/2026 09:00:10  kubectl run test --rm -it --image=busybox --restart=Never -- sh -c '
+  992  27/11/2026 09:00:10  for i in 1 2 3 4 5; do wget -qO- http://api-interne; echo; done;
+  993  27/11/2026 09:00:10  echo "-----"; wget -qO- http://web-flask | grep pod'
+  994  27/11/2026 09:00:10  sudo apt install -y socat
+  995  27/11/2026 09:00:10  nohup socat TCP-LISTEN:8080,fork,reuseaddr TCP:$(minikube ip):30080 > ~/tp3/socat.log 2>&1 &
+  996  27/11/2026 09:00:10  ss -tln | grep 8080
+  997  27/11/2026 09:00:10  pkill -f "socat TCP-LISTEN:8080"
+  998  27/11/2026 09:00:10  cd ~/tp3
+  999  27/11/2026 09:00:10  kubectl delete -f api-interne.yaml -f web-flask.yaml
+ 1000  27/11/2026 09:00:10  minikube image rm api-interne:1.0 web-flask:1.0
+ 1001  27/11/2026 09:00:10  kubectl get all
+ 1002  27/11/2026 09:00:10  ss -tln | grep 8080
+ 1003  27/11/2026 09:00:10  kubectl get all
+ 1004  27/11/2026 09:00:10  mkdir -p ~/tp3/api ~/tp3/web && cd ~/tp3
+ 1005  27/11/2026 09:00:10  cat > api/server.js <<'EOF'
+ 1006  27/11/2026 09:00:10  const http = require('http'), os = require('os');
+ 1007  27/11/2026 09:00:10  http.createServer((req, res) => {
+ 1008  27/11/2026 09:00:10    res.writeHead(200, {'Content-Type': 'application/json'});
+ 1009  27/11/2026 09:00:10    res.end(JSON.stringify({app: 'api-interne', pod: os.hostname(), date: new Date()}));
+ 1010  27/11/2026 09:00:10  }).listen(3000);
+ 1011  27/11/2026 09:00:10  EOF
+ 1012  27/11/2026 09:00:10  cat > api/Dockerfile <<'EOF'
+ 1013  27/11/2026 09:00:10  FROM node:22-alpine
+ 1014  27/11/2026 09:00:10  WORKDIR /app
+ 1015  27/11/2026 09:00:10  COPY server.js .
+ 1016  27/11/2026 09:00:10  EXPOSE 3000
+ 1017  27/11/2026 09:00:10  CMD ["node", "server.js"]
+ 1018  27/11/2026 09:00:10  EOF
+ 1019  27/11/2026 09:00:10  cat > web/app.py <<'EOF'
+ 1020  27/11/2026 09:00:10  from flask import Flask
+ 1021  27/11/2026 09:00:10  import socket
+ 1022  27/11/2026 09:00:10  app = Flask(__name__)
+ 1023  27/11/2026 09:00:10  @app.route("/")
+ 1024  27/11/2026 09:00:10  def index():
+ 1025  27/11/2026 09:00:10      return f"""<html><body style="font-family:sans-serif;text-align:center;margin-top:15%">
+ 1026  27/11/2026 09:00:10      <h1>TP Kubernetes - web-flask</h1>
+ 1027  27/11/2026 09:00:10      <p>Servi par le pod : <b>{socket.gethostname()}</b></p>
+ 1028  27/11/2026 09:00:10      <p>Rafraîchis la page pour changer de réplica</p></body></html>"""
+ 1029  27/11/2026 09:00:10  @app.route("/health")
+ 1030  27/11/2026 09:00:10  def health():
+ 1031  27/11/2026 09:00:10      return "ok"
+ 1032  27/11/2026 09:00:10  EOF
+ 1033  27/11/2026 09:00:10  cat > web/Dockerfile <<'EOF'
+ 1034  27/11/2026 09:00:10  FROM python:3.12-slim
+ 1035  27/11/2026 09:00:10  WORKDIR /app
+ 1036  27/11/2026 09:00:10  RUN pip install --no-cache-dir flask gunicorn
+ 1037  27/11/2026 09:00:10  COPY app.py .
+ 1038  27/11/2026 09:00:10  EXPOSE 5000
+ 1039  27/11/2026 09:00:10  CMD ["gunicorn", "-b", "0.0.0.0:5000", "-w", "2", "app:app"]
+ 1040  27/11/2026 09:00:10  EOF
+ 1041  27/11/2026 09:00:10  minikube image build -t api-interne:1.0 ./api
+ 1042  27/11/2026 09:00:10  minikube image build -t web-flask:1.0 ./web
+ 1043  27/11/2026 09:00:10  minikube image ls | grep -E "api-interne|web-flask"
+ 1044  27/11/2026 09:00:10  cat > api-interne.yaml <<'EOF'
+ 1045  27/11/2026 09:00:10  apiVersion: apps/v1
+ 1046  27/11/2026 09:00:10  kind: Deployment
+ 1047  27/11/2026 09:00:10  metadata:
+ 1048  27/11/2026 09:00:10    name: api-interne
+ 1049  27/11/2026 09:00:10  spec:
+ 1050  27/11/2026 09:00:10    replicas: 5
+ 1051  27/11/2026 09:00:10    selector:
+ 1052  27/11/2026 09:00:10      matchLabels: {app: api-interne}
+ 1053  27/11/2026 09:00:10    template:
+ 1054  27/11/2026 09:00:10      metadata:
+ 1055  27/11/2026 09:00:10        labels: {app: api-interne}
+ 1056  27/11/2026 09:00:10      spec:
+ 1057  27/11/2026 09:00:10        containers:
+ 1058  27/11/2026 09:00:10        - name: api
+ 1059  27/11/2026 09:00:10          image: api-interne:1.0
+ 1060  27/11/2026 09:00:10          imagePullPolicy: Never
+ 1061  27/11/2026 09:00:10          ports:
+ 1062  27/11/2026 09:00:10          - containerPort: 3000
+ 1063  27/11/2026 09:00:10  ---
+ 1064  27/11/2026 09:00:10  apiVersion: v1
+ 1065  27/11/2026 09:00:10  kind: Service
+ 1066  27/11/2026 09:00:10  metadata:
+ 1067  27/11/2026 09:00:10    name: api-interne
+ 1068  27/11/2026 09:00:10  spec:
+ 1069  27/11/2026 09:00:10    type: ClusterIP
+ 1070  27/11/2026 09:00:10    selector: {app: api-interne}
+ 1071  27/11/2026 09:00:10    ports:
+ 1072  27/11/2026 09:00:10    - port: 80
+ 1073  27/11/2026 09:00:10      targetPort: 3000
+ 1074  27/11/2026 09:00:10  EOF
+ 1075  27/11/2026 09:00:10  cat > web-flask.yaml <<'EOF'
+ 1076  27/11/2026 09:00:10  apiVersion: apps/v1
+ 1077  27/11/2026 09:00:10  kind: Deployment
+ 1078  27/11/2026 09:00:10  metadata:
+ 1079  27/11/2026 09:00:10    name: web-flask
+ 1080  27/11/2026 09:00:10  spec:
+ 1081  27/11/2026 09:00:10    replicas: 5
+ 1082  27/11/2026 09:00:10    selector:
+ 1083  27/11/2026 09:00:10      matchLabels: {app: web-flask}
+ 1084  27/11/2026 09:00:10    template:
+ 1085  27/11/2026 09:00:10      metadata:
+ 1086  27/11/2026 09:00:10        labels: {app: web-flask}
+ 1087  27/11/2026 09:00:10      spec:
+ 1088  27/11/2026 09:00:10        containers:
+ 1089  27/11/2026 09:00:10        - name: web
+ 1090  27/11/2026 09:00:10          image: web-flask:1.0
+ 1091  27/11/2026 09:00:10          imagePullPolicy: Never
+ 1092  27/11/2026 09:00:10          ports:
+ 1093  27/11/2026 09:00:10          - containerPort: 5000
+ 1094  27/11/2026 09:00:10          readinessProbe:
+ 1095  27/11/2026 09:00:10            httpGet: {path: /health, port: 5000}
+ 1096  27/11/2026 09:00:10  ---
+ 1097  27/11/2026 09:00:10  apiVersion: v1
+ 1098  27/11/2026 09:00:10  kind: Service
+ 1099  27/11/2026 09:00:10  metadata:
+ 1100  27/11/2026 09:00:10    name: web-flask
+ 1101  27/11/2026 09:00:10  spec:
+ 1102  27/11/2026 09:00:10    type: NodePort
+ 1103  27/11/2026 09:00:10    selector: {app: web-flask}
+ 1104  27/11/2026 09:00:10    ports:
+ 1105  27/11/2026 09:00:10    - port: 80
+ 1106  27/11/2026 09:00:10      targetPort: 5000
+ 1107  27/11/2026 09:00:10      nodePort: 30080
+ 1108  27/11/2026 09:00:10  EOF
+ 1109  27/11/2026 09:00:10  kubectl apply -f api-interne.yaml -f web-flask.yaml
+ 1110  27/11/2026 09:00:10  kubectl get deploy,pods,svc -o wide
+ 1111  27/11/2026 09:00:10  kubectl get deploy
+ 1112  27/11/2026 09:00:10  kubectl run test --rm -it --image=busybox --restart=Never -- sh -c '
+ 1113  27/11/2026 09:00:10  for i in 1 2 3 4 5; do wget -qO- http://api-interne; echo; done;
+ 1114  27/11/2026 09:00:10  echo "-----"; wget -qO- http://web-flask | grep pod'
+ 1115  27/11/2026 09:00:10  cat api-interne.yaml
+ 1116  27/11/2026 09:00:10  kubectl get all
+ 1117  27/11/2026 09:00:10  kubectl pod
+ 1118  27/11/2026 09:00:10  kubectl pods
+ 1119  27/11/2026 09:00:10  kubectl get  pod
+ 1120  27/11/2026 09:00:10  kubectl delete pod api-interne-54c5d484cd-2gr95
+ 1121  27/11/2026 09:00:10  kubectl get  pod
+ 1122  27/11/2026 09:00:10  sudo timedatectl set-timezone Europe/Paris
+ 1123  27/11/2026 09:00:10  kubectl delete -f api-interne.yaml -f web-flask.yaml
+ 1124  27/11/2026 09:00:10  sleep 35
+ 1125  27/11/2026 09:00:10  minikube image rm api-interne:1.0 web-flask:1.0
+ 1126  27/11/2026 09:00:10  kubectl get all
+ 1127  27/11/2026 09:00:10  ss -tln | grep 8080
+ 1128  27/11/2026 09:00:10  cd
+ 1129  27/11/2026 09:00:10  sudo ufw allow from 86.206.213.3 to any port 8081:8082 proto tcp comment 'TP k8s'
+ 1130  27/11/2026 09:00:10  mkdir -p ~/tp4 && cd ~/tp4
+ 1131  27/11/2026 09:00:10  minikube addons enable registry
+ 1132  27/11/2026 09:00:10  kubectl get pods -n kube-system | grep registry
+ 1133  27/11/2026 09:00:10  nohup socat TCP-LISTEN:5000,bind=127.0.0.1,reuseaddr,fork TCP:$(minikube ip):5000 > registry.log 2>&1 &
+ 1134  27/11/2026 09:00:10  curl -s localhost:5000/v2/_catalog
+ 1135  27/11/2026 09:00:10  cd ~/tp4 && mkdir -p app-a app-b app-c
+ 1136  27/11/2026 09:00:10  cat > app-a/app.py <<'EOF'
+ 1137  27/11/2026 09:00:10  import os, socket
+ 1138  27/11/2026 09:00:10  from flask import Flask
+ 1139  27/11/2026 09:00:10  app = Flask(__name__)
+ 1140  27/11/2026 09:00:10  @app.get("/")
+ 1141  27/11/2026 09:00:10  def index():
+ 1142  27/11/2026 09:00:10      return f"<h1>App A - Flask</h1><p>Pod : <b>{socket.gethostname()}</b><br>Namespace : <b>{os.getenv('POD_NAMESPACE')}</b></p>"
+ 1143  27/11/2026 09:00:10  @app.get("/health")
+ 1144  27/11/2026 09:00:10  def health():
+ 1145  27/11/2026 09:00:10      return "ok"
+ 1146  27/11/2026 09:00:10  EOF
+ 1147  27/11/2026 09:00:10  printf 'flask>=3,<4\ngunicorn>=22\n' > app-a/requirements.txt
+ 1148  27/11/2026 09:00:10  cat > app-b/app.py <<'EOF'
+ 1149  27/11/2026 09:00:10  import os, socket
+ 1150  27/11/2026 09:00:10  from fastapi import FastAPI
+ 1151  27/11/2026 09:00:10  from fastapi.responses import HTMLResponse
+ 1152  27/11/2026 09:00:10  app = FastAPI(title="App B - FastAPI")
+ 1153  27/11/2026 09:00:10  @app.get("/", response_class=HTMLResponse)
+ 1154  27/11/2026 09:00:10  def index():
+ 1155  27/11/2026 09:00:10      return f"<h1>App B - FastAPI</h1><p>Pod : <b>{socket.gethostname()}</b><br>Namespace : <b>{os.getenv('POD_NAMESPACE')}</b></p><a href='/docs'>Swagger UI</a>"
+ 1156  27/11/2026 09:00:10  @app.get("/health")
+ 1157  27/11/2026 09:00:10  def health():
+ 1158  27/11/2026 09:00:10      return {"status": "ok"}
+ 1159  27/11/2026 09:00:10  EOF
+ 1160  27/11/2026 09:00:10  printf 'fastapi\nuvicorn\n' > app-b/requirements.txt
+ 1161  27/11/2026 09:00:10  cat > app-c/app.py <<'EOF'
+ 1162  27/11/2026 09:00:10  import os, socket
+ 1163  27/11/2026 09:00:10  from bottle import Bottle
+ 1164  27/11/2026 09:00:10  app = Bottle()
+ 1165  27/11/2026 09:00:10  @app.get("/")
+ 1166  27/11/2026 09:00:10  def index():
+ 1167  27/11/2026 09:00:10      return f"<h1>App C - Bottle</h1><p>Pod : <b>{socket.gethostname()}</b><br>Namespace : <b>{os.getenv('POD_NAMESPACE')}</b></p>"
+ 1168  27/11/2026 09:00:10  @app.get("/health")
+ 1169  27/11/2026 09:00:10  def health():
+ 1170  27/11/2026 09:00:10      return "ok"
+ 1171  27/11/2026 09:00:10  EOF
+ 1172  27/11/2026 09:00:10  printf 'bottle\ngunicorn>=22\n' > app-c/requirements.txt
+ 1173  27/11/2026 09:00:10  for app in app-a app-b app-c; do   if [ $app = app-b ]; then CMD='["uvicorn","app:app","--host","0.0.0.0","--port","8000"]';   else CMD='["gunicorn","-b","0.0.0.0:8000","-w","2","app:app"]'; fi
+ 1174  27/11/2026 09:00:10    cat > $app/Dockerfile <<EOF
+ 1175  27/11/2026 09:00:10  cd ~/tp4
+ 1176  27/11/2026 09:00:10  cat > app-a/Dockerfile <<'EOF'
+ 1177  27/11/2026 09:00:10  FROM python:3.12-slim AS builder
+ 1178  27/11/2026 09:00:10  WORKDIR /app
+ 1179  27/11/2026 09:00:10  COPY requirements.txt .
+ 1180  27/11/2026 09:00:10  RUN python -m venv /venv && /venv/bin/pip install --no-cache-dir -r requirements.txt
+ 1181  27/11/2026 09:00:10  FROM python:3.12-slim
+ 1182  27/11/2026 09:00:10  ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PATH="/venv/bin:$PATH"
+ 1183  27/11/2026 09:00:10  RUN useradd -r -u 10001 appuser
+ 1184  27/11/2026 09:00:10  WORKDIR /app
+ 1185  27/11/2026 09:00:10  COPY --from=builder /venv /venv
+ 1186  27/11/2026 09:00:10  COPY app.py .
+ 1187  27/11/2026 09:00:10  USER 10001
+ 1188  27/11/2026 09:00:10  EXPOSE 8000
+ 1189  27/11/2026 09:00:10  CMD ["gunicorn", "-b", "0.0.0.0:8000", "-w", "2", "app:app"]
+ 1190  27/11/2026 09:00:10  EOF
+ 1191  27/11/2026 09:00:10  cp app-a/Dockerfile app-c/Dockerfile
+ 1192  27/11/2026 09:00:10  sed 's|CMD .*|CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]|' app-a/Dockerfile > app-b/Dockerfile
+ 1193  27/11/2026 09:00:10  for app in app-a app-b app-c; do printf '__pycache__/\n*.pyc\n.git\nDockerfile\n' > $app/.dockerignore; done
+ 1194  27/11/2026 09:00:10  tail -1 app-*/Dockerfile
+ 1195  27/11/2026 09:00:10  grep CMD app-*/Dockerfile
+ 1196  27/11/2026 09:00:10  minikube addons enable registry
+ 1197  27/11/2026 09:00:10  nohup socat TCP-LISTEN:5000,bind=127.0.0.1,reuseaddr,fork TCP:$(minikube ip):5000 > registry.log 2>&1 &
+ 1198  27/11/2026 09:00:10  sleep 5; curl -s localhost:5000/v2/_catalog
+ 1199  27/11/2026 09:00:10  cat registry.log
+ 1200  27/11/2026 09:00:10  ss -tlnp | grep 5000
+ 1201  27/11/2026 09:00:10  jobs
+ 1202  27/11/2026 09:00:10  for app in app-a app-b app-c; do   docker build -t localhost:5000/$app:1.0 ./$app && docker push localhost:5000/$app:1.0; done
+ 1203  27/11/2026 09:00:10  curl -s localhost:5000/v2/_catalog
+ 1204  27/11/2026 09:00:10  docker images | grep localhost:5000
+ 1205  27/11/2026 09:00:10  cat > app-a.yaml <<'EOF'
+ 1206  27/11/2026 09:00:10  apiVersion: v1
+ 1207  27/11/2026 09:00:10  kind: Namespace
+ 1208  27/11/2026 09:00:10  metadata:
+ 1209  27/11/2026 09:00:10    name: app-a
+ 1210  27/11/2026 09:00:10    labels: {projet: tp-minikube, equipe: fabien}
+ 1211  27/11/2026 09:00:10  ---
+ 1212  27/11/2026 09:00:10  apiVersion: apps/v1
+ 1213  27/11/2026 09:00:10  kind: Deployment
+ 1214  27/11/2026 09:00:10  metadata:
+ 1215  27/11/2026 09:00:10    name: app-a
+ 1216  27/11/2026 09:00:10    namespace: app-a
+ 1217  27/11/2026 09:00:10    labels: {app: app-a, framework: flask, tier: frontend, projet: tp-minikube}
+ 1218  27/11/2026 09:00:10  spec:
+ 1219  27/11/2026 09:00:10    replicas: 5
+ 1220  27/11/2026 09:00:10    selector:
+ 1221  27/11/2026 09:00:10      matchLabels: {app: app-a}
+ 1222  27/11/2026 09:00:10    template:
+ 1223  27/11/2026 09:00:10      metadata:
+ 1224  27/11/2026 09:00:10        labels: {app: app-a, framework: flask, tier: frontend, projet: tp-minikube}
+ 1225  27/11/2026 09:00:10      spec:
+ 1226  27/11/2026 09:00:10        containers:
+ 1227  27/11/2026 09:00:10        - name: app-a
+ 1228  27/11/2026 09:00:10          image: localhost:5000/app-a:1.0
+ 1229  27/11/2026 09:00:10          ports:
+ 1230  27/11/2026 09:00:10          - containerPort: 8000
+ 1231  27/11/2026 09:00:10          env:
+ 1232  27/11/2026 09:00:10          - name: POD_NAMESPACE
+ 1233  27/11/2026 09:00:10            valueFrom:
+ 1234  27/11/2026 09:00:10              fieldRef: {fieldPath: metadata.namespace}
+ 1235  27/11/2026 09:00:10          readinessProbe:
+ 1236  27/11/2026 09:00:10            httpGet: {path: /health, port: 8000}
+ 1237  27/11/2026 09:00:10          livenessProbe:
+ 1238  27/11/2026 09:00:10            httpGet: {path: /health, port: 8000}
+ 1239  27/11/2026 09:00:10            initialDelaySeconds: 10
+ 1240  27/11/2026 09:00:10          resources:
+ 1241  27/11/2026 09:00:10            requests: {cpu: 25m, memory: 48Mi}
+ 1242  27/11/2026 09:00:10            limits: {cpu: 250m, memory: 128Mi}
+ 1243  27/11/2026 09:00:10  ---
+ 1244  27/11/2026 09:00:10  apiVersion: v1
+ 1245  27/11/2026 09:00:10  kind: Service
+ 1246  27/11/2026 09:00:10  metadata:
+ 1247  27/11/2026 09:00:10    name: app-a
+ 1248  27/11/2026 09:00:10    namespace: app-a
+ 1249  27/11/2026 09:00:10    labels: {app: app-a, projet: tp-minikube}
+ 1250  27/11/2026 09:00:10  spec:
+ 1251  27/11/2026 09:00:10    type: LoadBalancer
+ 1252  27/11/2026 09:00:10    selector: {app: app-a}
+ 1253  27/11/2026 09:00:10    ports:
+ 1254  27/11/2026 09:00:10    - port: 80
+ 1255  27/11/2026 09:00:10      targetPort: 8000
+ 1256  27/11/2026 09:00:10  EOF
+ 1257  27/11/2026 09:00:10  sed -e 's/app-a/app-b/g' -e 's/framework: flask/framework: fastapi/'     -e 's/tier: frontend/tier: api/' -e 's/type: LoadBalancer/type: NodePort/' app-a.yaml > app-b.yaml
+ 1258  27/11/2026 09:00:10  sed -e 's/app-a/app-c/g' -e 's/framework: flask/framework: bottle/'     -e 's/tier: frontend/tier: backend/' -e 's/type: LoadBalancer/type: ClusterIP/' app-a.yaml > app-c.yaml
+ 1259  27/11/2026 09:00:10  grep -E "type:|framework" app-*.yaml
+ 1260  27/11/2026 09:00:10  kubectl apply -f app-a.yaml -f app-b.yaml -f app-c.yaml
+ 1261  27/11/2026 09:00:10  sleep 20
+ 1262  27/11/2026 09:00:10  kubectl get deploy,svc -A -l projet=tp-minikube
+ 1263  27/11/2026 09:00:10  kubectl get pods -A -l projet=tp-minikube -L app,framework,tier
+ 1264  27/11/2026 09:00:10  kubectl get svc -n app-a
+ 1265  27/11/2026 09:00:10  pkill -f "socat TCP-LISTEN"
+ 1266  27/11/2026 09:00:10  pkill -f "port-forward"
+ 1267  27/11/2026 09:00:10  kubectl delete -f app-a.yaml -f app-b.yaml -f app-c.yaml
+ 1268  27/11/2026 09:00:10  minikube addons disable registry
+ 1269  27/11/2026 09:00:10  docker rmi localhost:5000/app-a:1.0 localhost:5000/app-b:1.0 localhost:5000/app-c:1.0
+ 1270  27/11/2026 09:00:10  kubectl get ns | grep app-
+ 1271  27/11/2026 09:00:10  kubectl get all
+ 1272  27/11/2026 09:00:10  ss -tln | grep -E '5000|808[0-2]'
+ 1273  27/11/2026 09:00:10  cd
+ 1274  27/11/2026 09:00:10  mkdir -p ~/tp5/app ~/tp5/k8s && cd ~/tp5
+ 1275  27/11/2026 09:00:10  minikube addons enable ingress
+ 1276  27/11/2026 09:00:10  kubectl wait -n ingress-nginx --for=condition=ready pod   -l app.kubernetes.io/component=controller --timeout=180s
+ 1277  27/11/2026 09:00:10  kubectl get pods -n ingress-nginx
+ 1278  27/11/2026 09:00:10  cat > app/app.py <<'EOF'
+ 1279  27/11/2026 09:00:10  import os, socket, platform, psutil
+ 1280  27/11/2026 09:00:10  from flask import Flask, jsonify, render_template_string
+ 1281  27/11/2026 09:00:10  app = Flask(__name__)
+ 1282  27/11/2026 09:00:10  PAGE = """<!doctype html><html><head><meta charset="utf-8"><title>TP Ingress</title>
+ 1283  27/11/2026 09:00:10  <style>body{font-family:sans-serif;max-width:640px;margin:8% auto}td{padding:4px 14px}</style></head>
+ 1284  27/11/2026 09:00:10  <body><h1>TP Ingress Nginx - Flask</h1><table>
+ 1285  27/11/2026 09:00:10  {% for k, v in info.items() %}<tr><td>{{ k }}</td><td><b>{{ v }}</b></td></tr>{% endfor %}
+ 1286  27/11/2026 09:00:10  </table><p><a href="/api/info">/api/info (JSON)</a></p></body></html>"""
+ 1287  27/11/2026 09:00:10  def info():
+ 1288  27/11/2026 09:00:10      return {"Pod": socket.gethostname(),
+ 1289  27/11/2026 09:00:10              "Namespace": os.getenv("POD_NAMESPACE", "?"),
+ 1290  27/11/2026 09:00:10              "Python": platform.python_version(),
+ 1291  27/11/2026 09:00:10              "CPU (%)": psutil.cpu_percent(interval=0.1),
+ 1292  27/11/2026 09:00:10              "RAM du process (Mo)": round(psutil.Process().memory_info().rss / 1e6, 1)}
+ 1293  27/11/2026 09:00:10  @app.get("/")
+ 1294  27/11/2026 09:00:10  def index():
+ 1295  27/11/2026 09:00:10      return render_template_string(PAGE, info=info())
+ 1296  27/11/2026 09:00:10  @app.get("/api/info")
+ 1297  27/11/2026 09:00:10  def api():
+ 1298  27/11/2026 09:00:10      return jsonify(info())
+ 1299  27/11/2026 09:00:10  @app.get("/health")
+ 1300  27/11/2026 09:00:10  def health():
+ 1301  27/11/2026 09:00:10      return "ok"
+ 1302  27/11/2026 09:00:10  EOF
+ 1303  27/11/2026 09:00:10  printf 'flask>=3,<4\ngunicorn>=22\npsutil>=5.9\n' > app/requirements.txt
+ 1304  27/11/2026 09:00:10  ls app/
+ 1305  27/11/2026 09:00:10  cat > app/Dockerfile <<'EOF'
+ 1306  27/11/2026 09:00:10  # Étape 1 : dépendances installées dans un venv
+ 1307  27/11/2026 09:00:10  FROM python:3.12-slim AS builder
+ 1308  27/11/2026 09:00:10  WORKDIR /app
+ 1309  27/11/2026 09:00:10  COPY requirements.txt .
+ 1310  27/11/2026 09:00:10  RUN python -m venv /venv && /venv/bin/pip install --no-cache-dir -r requirements.txt
+ 1311  27/11/2026 09:00:10  # Étape 2 : image finale minimale, non-root
+ 1312  27/11/2026 09:00:10  FROM python:3.12-slim
+ 1313  27/11/2026 09:00:10  ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PATH="/venv/bin:$PATH"
+ 1314  27/11/2026 09:00:10  RUN useradd -r -u 10001 appuser
+ 1315  27/11/2026 09:00:10  WORKDIR /app
+ 1316  27/11/2026 09:00:10  COPY --from=builder /venv /venv
+ 1317  27/11/2026 09:00:10  COPY app.py .
+ 1318  27/11/2026 09:00:10  USER 10001
+ 1319  27/11/2026 09:00:10  EXPOSE 8000
+ 1320  27/11/2026 09:00:10  CMD ["gunicorn", "-b", "0.0.0.0:8000", "-w", "2", "app:app"]
+ 1321  27/11/2026 09:00:10  EOF
+ 1322  27/11/2026 09:00:10  printf '__pycache__/\n*.pyc\n.git\nDockerfile\n' > app/.dockerignore
+ 1323  27/11/2026 09:00:10  minikube image build -t flask-info:1.0 ./app
+ 1324  27/11/2026 09:00:10  minikube image ls --format table | grep flask-info
+ 1325  27/11/2026 09:00:10  printf '__pycache__/\n*.pyc\n.git\n' > app/.dockerignore
+ 1326  27/11/2026 09:00:10  minikube image build -t flask-info:1.0 ./app
+ 1327  27/11/2026 09:00:10  minikube image ls --format table | grep flask-info
+ 1328  27/11/2026 09:00:10  ls k8s/
+ 1329  27/11/2026 09:00:10  cat > k8s/00-namespace.yaml <<'EOF'
+ 1330  27/11/2026 09:00:10  apiVersion: v1
+ 1331  27/11/2026 09:00:10  kind: Namespace
+ 1332  27/11/2026 09:00:10  metadata:
+ 1333  27/11/2026 09:00:10    name: tp-ingress
+ 1334  27/11/2026 09:00:10    labels: {projet: tp-ingress}
+ 1335  27/11/2026 09:00:10  EOF
+ 1336  27/11/2026 09:00:10  cat > k8s/01-resourcequota.yaml <<'EOF'
+ 1337  27/11/2026 09:00:10  apiVersion: v1
+ 1338  27/11/2026 09:00:10  kind: ResourceQuota
+ 1339  27/11/2026 09:00:10  metadata:
+ 1340  27/11/2026 09:00:10    name: quota-tp-ingress
+ 1341  27/11/2026 09:00:10    namespace: tp-ingress
+ 1342  27/11/2026 09:00:10  spec:
+ 1343  27/11/2026 09:00:10    hard:
+ 1344  27/11/2026 09:00:10      pods: "10"
+ 1345  27/11/2026 09:00:10      requests.cpu: 500m
+ 1346  27/11/2026 09:00:10      requests.memory: 512Mi
+ 1347  27/11/2026 09:00:10      limits.cpu: "2"
+ 1348  27/11/2026 09:00:10      limits.memory: 1Gi
+ 1349  27/11/2026 09:00:10  EOF
+ 1350  27/11/2026 09:00:10  cat > k8s/02-deployment.yaml <<'EOF'
+ 1351  27/11/2026 09:00:10  apiVersion: apps/v1
+ 1352  27/11/2026 09:00:10  kind: Deployment
+ 1353  27/11/2026 09:00:10  metadata:
+ 1354  27/11/2026 09:00:10    name: flask-info
+ 1355  27/11/2026 09:00:10    namespace: tp-ingress
+ 1356  27/11/2026 09:00:10    labels: {app: flask-info, tier: frontend}
+ 1357  27/11/2026 09:00:10  spec:
+ 1358  27/11/2026 09:00:10    replicas: 3
+ 1359  27/11/2026 09:00:10    selector:
+ 1360  27/11/2026 09:00:10      matchLabels: {app: flask-info}
+ 1361  27/11/2026 09:00:10    template:
+ 1362  27/11/2026 09:00:10      metadata:
+ 1363  27/11/2026 09:00:10        labels: {app: flask-info, tier: frontend}
+ 1364  27/11/2026 09:00:10      spec:
+ 1365  27/11/2026 09:00:10        containers:
+ 1366  27/11/2026 09:00:10        - name: flask-info
+ 1367  27/11/2026 09:00:10          image: flask-info:1.0
+ 1368  27/11/2026 09:00:10          imagePullPolicy: Never
+ 1369  27/11/2026 09:00:10          ports:
+ 1370  27/11/2026 09:00:10          - containerPort: 8000
+ 1371  27/11/2026 09:00:10          env:
+ 1372  27/11/2026 09:00:10          - name: POD_NAMESPACE
+ 1373  27/11/2026 09:00:10            valueFrom:
+ 1374  27/11/2026 09:00:10              fieldRef: {fieldPath: metadata.namespace}
+ 1375  27/11/2026 09:00:10          readinessProbe:
+ 1376  27/11/2026 09:00:10            httpGet: {path: /health, port: 8000}
+ 1377  27/11/2026 09:00:10          livenessProbe:
+ 1378  27/11/2026 09:00:10            httpGet: {path: /health, port: 8000}
+ 1379  27/11/2026 09:00:10            initialDelaySeconds: 10
+ 1380  27/11/2026 09:00:10          resources:
+ 1381  27/11/2026 09:00:10            requests: {cpu: 50m, memory: 64Mi}
+ 1382  27/11/2026 09:00:10            limits: {cpu: 250m, memory: 128Mi}
+ 1383  27/11/2026 09:00:10  EOF
+ 1384  27/11/2026 09:00:10  cat > k8s/03-service.yaml <<'EOF'
+ 1385  27/11/2026 09:00:10  apiVersion: v1
+ 1386  27/11/2026 09:00:10  kind: Service
+ 1387  27/11/2026 09:00:10  metadata:
+ 1388  27/11/2026 09:00:10    name: flask-info
+ 1389  27/11/2026 09:00:10    namespace: tp-ingress
+ 1390  27/11/2026 09:00:10    labels: {app: flask-info}
+ 1391  27/11/2026 09:00:10  spec:
+ 1392  27/11/2026 09:00:10    type: ClusterIP
+ 1393  27/11/2026 09:00:10    selector: {app: flask-info}
+ 1394  27/11/2026 09:00:10    ports:
+ 1395  27/11/2026 09:00:10    - port: 80
+ 1396  27/11/2026 09:00:10      targetPort: 8000
+ 1397  27/11/2026 09:00:10  EOF
+ 1398  27/11/2026 09:00:10  cat > k8s/04-ingress.yaml <<'EOF'
+ 1399  27/11/2026 09:00:10  apiVersion: networking.k8s.io/v1
+ 1400  27/11/2026 09:00:10  kind: Ingress
+ 1401  27/11/2026 09:00:10  metadata:
+ 1402  27/11/2026 09:00:10    name: flask-info
+ 1403  27/11/2026 09:00:10    namespace: tp-ingress
+ 1404  27/11/2026 09:00:10  spec:
+ 1405  27/11/2026 09:00:10    ingressClassName: nginx
+ 1406  27/11/2026 09:00:10    rules:
+ 1407  27/11/2026 09:00:10    - host: tp.212.227.20.231.nip.io
+ 1408  27/11/2026 09:00:10      http:
+ 1409  27/11/2026 09:00:10        paths:
+ 1410  27/11/2026 09:00:10        - path: /
+ 1411  27/11/2026 09:00:10          pathType: Prefix
+ 1412  27/11/2026 09:00:10          backend:
+ 1413  27/11/2026 09:00:10            service:
+ 1414  27/11/2026 09:00:10              name: flask-info
+ 1415  27/11/2026 09:00:10              port:
+ 1416  27/11/2026 09:00:10                number: 80
+ 1417  27/11/2026 09:00:10  EOF
+ 1418  27/11/2026 09:00:10  cat > k8s/05-networkpolicy.yaml <<'EOF'
+ 1419  27/11/2026 09:00:10  apiVersion: networking.k8s.io/v1
+ 1420  27/11/2026 09:00:10  kind: NetworkPolicy
+ 1421  27/11/2026 09:00:10  metadata:
+ 1422  27/11/2026 09:00:10    name: allow-only-ingress-nginx
+ 1423  27/11/2026 09:00:10    namespace: tp-ingress
+ 1424  27/11/2026 09:00:10  spec:
+ 1425  27/11/2026 09:00:10    podSelector: {}
+ 1426  27/11/2026 09:00:10    policyTypes: [Ingress]
+ 1427  27/11/2026 09:00:10    ingress:
+ 1428  27/11/2026 09:00:10    - from:
+ 1429  27/11/2026 09:00:10      - namespaceSelector:
+ 1430  27/11/2026 09:00:10          matchLabels:
+ 1431  27/11/2026 09:00:10            kubernetes.io/metadata.name: ingress-nginx
+ 1432  27/11/2026 09:00:10      ports:
+ 1433  27/11/2026 09:00:10      - port: 8000
+ 1434  27/11/2026 09:00:10  EOF
+ 1435  27/11/2026 09:00:10  ls k8s/
+ 1436  27/11/2026 09:00:10  kubectl apply -f k8s/
+ 1437  27/11/2026 09:00:10  sleep 15
+ 1438  27/11/2026 09:00:10  kubectl get all,ingress,resourcequota,networkpolicy -n tp-ingress
+ 1439  27/11/2026 09:00:10  curl -s -H "Host: tp.212.227.20.231.nip.io" http://$(minikube ip)/api/info; echo
+ 1440  27/11/2026 09:00:10  curl -s -o /dev/null -w "%{http_code}\n" http://$(minikube ip)/
+ 1441  27/11/2026 09:00:10  nohup socat TCP-LISTEN:8080,fork,reuseaddr TCP:$(minikube ip):80 > socat.log 2>&1 &
+ 1442  27/11/2026 09:00:10  sleep 2; ss -tln | grep 8080
+ 1443  27/11/2026 09:00:10  pkill -f "socat TCP-LISTEN:8080"
+ 1444  27/11/2026 09:00:10  kubectl delete -f k8s/
+ 1445  27/11/2026 09:00:10  minikube image rm flask-info:1.0
+ 1446  27/11/2026 09:00:10  kubectl get ns | grep tp-ingress
+ 1447  27/11/2026 09:00:10  ss -tln | grep 8080
+ 1448  27/11/2026 09:00:10  kubectl get pods -n ingress-nginx
+ 1449  27/11/2026 09:00:10  mkdir -p ~/tp6/k8s && cd ~/tp6
+ 1450  27/11/2026 09:00:10  cp -r ~/tp4/app-a vitrine && cp -r ~/tp4/app-b admin && cp -r ~/tp4/app-c last
+ 1451  27/11/2026 09:00:10  sed -i 's/App A - Flask/Vitrine (Flask)/' vitrine/app.py
+ 1452  27/11/2026 09:00:10  sed -i "s/App B - FastAPI/Admin (FastAPI)/; s|<a href='/docs'>Swagger UI</a>||" admin/app.py
+ 1453  27/11/2026 09:00:10  sed -i 's/App C - Bottle/Last (Bottle)/' last/app.py
+ 1454  27/11/2026 09:00:10  for a in vitrine admin last; do   printf '__pycache__/\n*.pyc\n.git\n' > $a/.dockerignore;   minikube image build -t $a:1.0 ./$a; done
+ 1455  27/11/2026 09:00:10  minikube image ls --format table | grep -E 'vitrine|admin|last'
+ 1456  27/11/2026 09:00:10  cat > k8s/00-ns-front.yaml <<'EOF'
+ 1457  27/11/2026 09:00:10  apiVersion: v1
+ 1458  27/11/2026 09:00:10  kind: Namespace
+ 1459  27/11/2026 09:00:10  metadata:
+ 1460  27/11/2026 09:00:10    name: env-front
+ 1461  27/11/2026 09:00:10    labels: {env: front}
+ 1462  27/11/2026 09:00:10  EOF
+ 1463  27/11/2026 09:00:10  sed 's/front/back/g' k8s/00-ns-front.yaml > k8s/01-ns-back.yaml
+ 1464  27/11/2026 09:00:10  cat > k8s/10-vitrine-deploy.yaml <<'EOF'
+ 1465  27/11/2026 09:00:10  apiVersion: apps/v1
+ 1466  27/11/2026 09:00:10  kind: Deployment
+ 1467  27/11/2026 09:00:10  metadata:
+ 1468  27/11/2026 09:00:10    name: vitrine
+ 1469  27/11/2026 09:00:10    namespace: env-front
+ 1470  27/11/2026 09:00:10    labels: {app: vitrine, env: front}
+ 1471  27/11/2026 09:00:10  spec:
+ 1472  27/11/2026 09:00:10    replicas: 3
+ 1473  27/11/2026 09:00:10    selector:
+ 1474  27/11/2026 09:00:10      matchLabels: {app: vitrine}
+ 1475  27/11/2026 09:00:10    template:
+ 1476  27/11/2026 09:00:10      metadata:
+ 1477  27/11/2026 09:00:10        labels: {app: vitrine, env: front}
+ 1478  27/11/2026 09:00:10      spec:
+ 1479  27/11/2026 09:00:10        containers:
+ 1480  27/11/2026 09:00:10        - name: vitrine
+ 1481  27/11/2026 09:00:10          image: vitrine:1.0
+ 1482  27/11/2026 09:00:10          imagePullPolicy: Never
+ 1483  27/11/2026 09:00:10          ports:
+ 1484  27/11/2026 09:00:10          - containerPort: 8000
+ 1485  27/11/2026 09:00:10          env:
+ 1486  27/11/2026 09:00:10          - name: POD_NAMESPACE
+ 1487  27/11/2026 09:00:10            valueFrom:
+ 1488  27/11/2026 09:00:10              fieldRef: {fieldPath: metadata.namespace}
+ 1489  27/11/2026 09:00:10          readinessProbe:
+ 1490  27/11/2026 09:00:10            httpGet: {path: /health, port: 8000}
+ 1491  27/11/2026 09:00:10          livenessProbe:
+ 1492  27/11/2026 09:00:10            httpGet: {path: /health, port: 8000}
+ 1493  27/11/2026 09:00:10            initialDelaySeconds: 10
+ 1494  27/11/2026 09:00:10          resources:
+ 1495  27/11/2026 09:00:10            requests: {cpu: 25m, memory: 48Mi}
+ 1496  27/11/2026 09:00:10            limits: {cpu: 250m, memory: 128Mi}
+ 1497  27/11/2026 09:00:10  EOF
+ 1498  27/11/2026 09:00:10  cat > k8s/11-vitrine-svc.yaml <<'EOF'
+ 1499  27/11/2026 09:00:10  apiVersion: v1
+ 1500  27/11/2026 09:00:10  kind: Service
+ 1501  27/11/2026 09:00:10  metadata:
+ 1502  27/11/2026 09:00:10    name: vitrine
+ 1503  27/11/2026 09:00:10    namespace: env-front
+ 1504  27/11/2026 09:00:10    labels: {app: vitrine, env: front}
+ 1505  27/11/2026 09:00:10  spec:
+ 1506  27/11/2026 09:00:10    type: ClusterIP
+ 1507  27/11/2026 09:00:10    selector: {app: vitrine}
+ 1508  27/11/2026 09:00:10    ports:
+ 1509  27/11/2026 09:00:10    - port: 80
+ 1510  27/11/2026 09:00:10      targetPort: 8000
+ 1511  27/11/2026 09:00:10  EOF
+ 1512  27/11/2026 09:00:10  for a in admin last; do   n=$([ $a = admin ] && echo 2 || echo 3);   sed -e "s/vitrine/$a/g" -e 's/env-front/env-back/g' -e 's/env: front/env: back/g' k8s/10-vitrine-deploy.yaml > k8s/${n}0-$a-deploy.yaml;   sed -e "s/vitrine/$a/g" -e 's/env-front/env-back/g' -e 's/env: front/env: back/g' k8s/11-vitrine-svc.yaml > k8s/${n}1-$a-svc.yaml; done
+ 1513  27/11/2026 09:00:10  cat > k8s/40-ingress-front.yaml <<'EOF'
+ 1514  27/11/2026 09:00:10  apiVersion: networking.k8s.io/v1
+ 1515  27/11/2026 09:00:10  kind: Ingress
+ 1516  27/11/2026 09:00:10  metadata:
+ 1517  27/11/2026 09:00:10    name: ingress-front
+ 1518  27/11/2026 09:00:10    namespace: env-front
+ 1519  27/11/2026 09:00:10  spec:
+ 1520  27/11/2026 09:00:10    ingressClassName: nginx
+ 1521  27/11/2026 09:00:10    rules:
+ 1522  27/11/2026 09:00:10    - http:
+ 1523  27/11/2026 09:00:10        paths:
+ 1524  27/11/2026 09:00:10        - path: /
+ 1525  27/11/2026 09:00:10          pathType: Prefix
+ 1526  27/11/2026 09:00:10          backend:
+ 1527  27/11/2026 09:00:10            service:
+ 1528  27/11/2026 09:00:10              name: vitrine
+ 1529  27/11/2026 09:00:10              port:
+ 1530  27/11/2026 09:00:10                number: 80
+ 1531  27/11/2026 09:00:10  EOF
+ 1532  27/11/2026 09:00:10  cat > k8s/41-ingress-back.yaml <<'EOF'
+ 1533  27/11/2026 09:00:10  apiVersion: networking.k8s.io/v1
+ 1534  27/11/2026 09:00:10  kind: Ingress
+ 1535  27/11/2026 09:00:10  metadata:
+ 1536  27/11/2026 09:00:10    name: ingress-back
+ 1537  27/11/2026 09:00:10    namespace: env-back
+ 1538  27/11/2026 09:00:10    annotations:
+ 1539  27/11/2026 09:00:10      nginx.ingress.kubernetes.io/use-regex: "true"
+ 1540  27/11/2026 09:00:10      nginx.ingress.kubernetes.io/rewrite-target: /$2
+ 1541  27/11/2026 09:00:10  spec:
+ 1542  27/11/2026 09:00:10    ingressClassName: nginx
+ 1543  27/11/2026 09:00:10    rules:
+ 1544  27/11/2026 09:00:10    - http:
+ 1545  27/11/2026 09:00:10        paths:
+ 1546  27/11/2026 09:00:10        - path: /admin(/|$)(.*)
+ 1547  27/11/2026 09:00:10          pathType: ImplementationSpecific
+ 1548  27/11/2026 09:00:10          backend:
+ 1549  27/11/2026 09:00:10            service:
+ 1550  27/11/2026 09:00:10              name: admin
+ 1551  27/11/2026 09:00:10              port:
+ 1552  27/11/2026 09:00:10                number: 80
+ 1553  27/11/2026 09:00:10        - path: /last(/|$)(.*)
+ 1554  27/11/2026 09:00:10          pathType: ImplementationSpecific
+ 1555  27/11/2026 09:00:10          backend:
+ 1556  27/11/2026 09:00:10            service:
+ 1557  27/11/2026 09:00:10              name: last
+ 1558  27/11/2026 09:00:10              port:
+ 1559  27/11/2026 09:00:10                number: 80
+ 1560  27/11/2026 09:00:10  EOF
+ 1561  27/11/2026 09:00:10  cat > k8s/50-netpol-front.yaml <<'EOF'
+ 1562  27/11/2026 09:00:10  apiVersion: networking.k8s.io/v1
+ 1563  27/11/2026 09:00:10  kind: NetworkPolicy
+ 1564  27/11/2026 09:00:10  metadata:
+ 1565  27/11/2026 09:00:10    name: allow-only-ingress-nginx
+ 1566  27/11/2026 09:00:10    namespace: env-front
+ 1567  27/11/2026 09:00:10  spec:
+ 1568  27/11/2026 09:00:10    podSelector: {}
+ 1569  27/11/2026 09:00:10    policyTypes: [Ingress]
+ 1570  27/11/2026 09:00:10    ingress:
+ 1571  27/11/2026 09:00:10    - from:
+ 1572  27/11/2026 09:00:10      - namespaceSelector:
+ 1573  27/11/2026 09:00:10          matchLabels:
+ 1574  27/11/2026 09:00:10            kubernetes.io/metadata.name: ingress-nginx
+ 1575  27/11/2026 09:00:10      ports:
+ 1576  27/11/2026 09:00:10      - port: 8000
+ 1577  27/11/2026 09:00:10  EOF
+ 1578  27/11/2026 09:00:10  sed 's/env-front/env-back/' k8s/50-netpol-front.yaml > k8s/51-netpol-back.yaml
+ 1579  27/11/2026 09:00:10  ls k8s/
+ 1580  27/11/2026 09:00:10  kubectl apply -f k8s/
+ 1581  27/11/2026 09:00:10  sleep 20
+ 1582  27/11/2026 09:00:10  ed 's/env-front/env-back/' k8s/50-netpol-front.yaml > k8s/51-netpol-back.yaml
+ 1583  27/11/2026 09:00:10  fabien@my-vps:~/tp6$ ls k8s/
+ 1584  27/11/2026 09:00:10  00-ns-front.yaml  10-vitrine-deploy.yaml  20-admin-deploy.yaml  30-last-deploy.yaml  40-ingress-front.yaml  50-netpol-front.yaml
+ 1585  27/11/2026 09:00:10  01-ns-back.yaml   11-vitrine-svc.yaml     21-admin-svc.yaml     31-last-svc.yaml     41-ingress-back.yaml   51-netpol-back.yaml
+ 1586  27/11/2026 09:00:10  fabien@my-vps:~/tp6$ kubectl apply -f k8s/
+ 1587  27/11/2026 09:00:10  namespace/env-front created
+ 1588  27/11/2026 09:00:10  namespace/env-back created
+ 1589  27/11/2026 09:00:10  deployment.apps/vitrine created
+ 1590  27/11/2026 09:00:10  service/vitrine created
+ 1591  27/11/2026 09:00:10  deployment.apps/admin created
+ 1592  27/11/2026 09:00:10  service/admin created
+ 1593  27/11/2026 09:00:10  deployment.apps/last created
+ 1594  27/11/2026 09:00:10  service/last created
+ 1595  27/11/2026 09:00:10  ingress.networking.k8s.io/ingress-front created
+ 1596  27/11/2026 09:00:10  ingress.networking.k8s.io/ingress-back created
+ 1597  27/11/2026 09:00:10  networkpolicy.networking.k8s.io/allow-only-ingress-nginx created
+ 1598  27/11/2026 09:00:10  sleep 10
+ 1599  27/11/2026 09:00:10  kubectl get deploy,svc,ingress -n env-front
+ 1600  27/11/2026 09:00:10  kubectl get deploy,svc,ingress -n env-back
+ 1601  27/11/2026 09:00:10  for p in / /admin /last; do echo "== $p"; curl -s http://$(minikube ip)$p | grep -oE '<h1>.*</h1>|Pod : <b>[^<]*'; done
+ 1602  27/11/2026 09:00:10  nohup socat TCP-LISTEN:8080,fork,reuseaddr TCP:$(minikube ip):80 > socat.log 2>&1 &
+ 1603  27/11/2026 09:00:10  sleep 2; ss -tln | grep 8080
+ 1604  27/11/2026 09:00:10  nano requirement.txt
+ 1605  27/11/2026 09:00:10  nano requirements.txt
+ 1606  27/11/2026 09:00:10  nano vitrine/requirements.txt
+ 1607  27/11/2026 09:00:10  nano admin/requirements.txt
+ 1608  27/11/2026 09:00:10  nano last/requirements.txt
+ 1609  27/11/2026 09:00:10  pkill -f "socat TCP-LISTEN:8080"
+ 1610  27/11/2026 09:00:10  kubectl delete -f k8s/
+ 1611  27/11/2026 09:00:10  minikube image rm vitrine:1.0 admin:1.0 last:1.0
+ 1612  27/11/2026 09:00:10  kubectl get ns | grep env-
+ 1613  27/11/2026 09:00:10  ss -tln | grep 8080
+ 1614  27/11/2026 09:00:10  cd
+ 1615  27/11/2026 09:00:10  ls -la
+ 1616  27/11/2026 09:00:10  mkdir -p ~/tp7/k8s && cd ~/tp7
+ 1617  27/11/2026 09:00:10  minikube addons enable registry
+ 1618  27/11/2026 09:00:10  sleep 20
+ 1619  27/11/2026 09:00:10  nohup socat TCP-LISTEN:5000,bind=127.0.0.1,reuseaddr,fork TCP:$(minikube ip):5000 > registry.log 2>&1 &
+ 1620  27/11/2026 09:00:10  sleep 2; curl -s localhost:5000/v2/_catalog
+ 1621  27/11/2026 09:00:10  kubectl apply --server-side -f https://github.com/envoyproxy/gateway/releases/download/v1.10.0/install.yaml
+ 1622  27/11/2026 09:00:10  kubectl wait --timeout=5m -n envoy-gateway-system deployment/envoy-gateway --for=condition=Available
+ 1623  27/11/2026 09:00:10  kubectl get pods -n envoy-gateway-system
+ 1624  27/11/2026 09:00:10  curl -s localhost:5000/v2/_catalog
+ 1625  27/11/2026 09:00:10  git clone --depth 1 https://github.com/appseed-projects/38452dec-0739-4343-b0a5-bd66a5ddde35 datta-able
+ 1626  27/11/2026 09:00:10  cd datta-able
+ 1627  27/11/2026 09:00:10  cat > requirements.txt <<'EOF'
+ 1628  27/11/2026 09:00:10  Django==3.2.25
+ 1629  27/11/2026 09:00:10  dj-database-url==0.5.0
+ 1630  27/11/2026 09:00:10  gunicorn==22.0.0
+ 1631  27/11/2026 09:00:10  pytz==2024.1
+ 1632  27/11/2026 09:00:10  sqlparse==0.5.0
+ 1633  27/11/2026 09:00:10  whitenoise==5.3.0
+ 1634  27/11/2026 09:00:10  django-environ==0.8.1
+ 1635  27/11/2026 09:00:10  mysqlclient==2.2.4
+ 1636  27/11/2026 09:00:10  EOF
+ 1637  27/11/2026 09:00:10  cat > .dockerignore <<'EOF'
+ 1638  27/11/2026 09:00:10  .git
+ 1639  27/11/2026 09:00:10  .env
+ 1640  27/11/2026 09:00:10  env.sample
+ 1641  27/11/2026 09:00:10  *.sqlite3
+ 1642  27/11/2026 09:00:10  __pycache__/
+ 1643  27/11/2026 09:00:10  *.pyc
+ 1644  27/11/2026 09:00:10  nginx/
+ 1645  27/11/2026 09:00:10  docker-compose.yml
+ 1646  27/11/2026 09:00:10  deployer.json
+ 1647  27/11/2026 09:00:10  log.json
+ 1648  27/11/2026 09:00:10  EOF
+ 1649  27/11/2026 09:00:10  cat > Dockerfile <<'EOF'
+ 1650  27/11/2026 09:00:10  # ---------- Étape 1 : build (compilateur + headers MySQL) ----------
+ 1651  27/11/2026 09:00:10  FROM python:3.10-slim AS builder
+ 1652  27/11/2026 09:00:10  RUN apt-get update \
+ 1653  27/11/2026 09:00:10   && apt-get install -y --no-install-recommends gcc pkg-config default-libmysqlclient-dev \
+ 1654  27/11/2026 09:00:10   && rm -rf /var/lib/apt/lists/*
+ 1655  27/11/2026 09:00:10  WORKDIR /app
+ 1656  27/11/2026 09:00:10  COPY requirements.txt .
+ 1657  27/11/2026 09:00:10  RUN python -m venv /venv && /venv/bin/pip install --no-cache-dir -r requirements.txt
+ 1658  27/11/2026 09:00:10  COPY . .
+ 1659  27/11/2026 09:00:10  RUN DEBUG=False /venv/bin/python manage.py collectstatic --noinput
+ 1660  27/11/2026 09:00:10  # ---------- Étape 2 : image finale (runtime uniquement) ----------
+ 1661  27/11/2026 09:00:10  FROM python:3.10-slim
+ 1662  27/11/2026 09:00:10  RUN apt-get update \
+ 1663  27/11/2026 09:00:10   && apt-get install -y --no-install-recommends libmariadb3 \
+ 1664  27/11/2026 09:00:10   && rm -rf /var/lib/apt/lists/* \
+ 1665  27/11/2026 09:00:10   && useradd -r -u 10001 appuser
+ 1666  27/11/2026 09:00:10  ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PATH="/venv/bin:$PATH" DEBUG=False
+ 1667  27/11/2026 09:00:10  WORKDIR /app
+ 1668  27/11/2026 09:00:10  COPY --from=builder /venv /venv
+ 1669  27/11/2026 09:00:10  COPY --from=builder --chown=10001:10001 /app /app
+ 1670  27/11/2026 09:00:10  USER 10001
+ 1671  27/11/2026 09:00:10  EXPOSE 5005
+ 1672  27/11/2026 09:00:10  CMD ["gunicorn", "--bind", "0.0.0.0:5005", "--workers", "2", "--access-logfile", "-", "core.wsgi"]
+ 1673  27/11/2026 09:00:10  EOF
+ 1674  27/11/2026 09:00:10  docker build -t localhost:5000/datta-able:1.0 .
+ 1675  27/11/2026 09:00:10  docker push localhost:5000/datta-able:1.0
+ 1676  27/11/2026 09:00:10  curl -s localhost:5000/v2/_catalog
+ 1677  27/11/2026 09:00:10  docker images | grep datta-able
+ 1678  27/11/2026 09:00:10  cd ~/tp7
+ 1679  27/11/2026 09:00:10  ls k8s/
+ 1680  27/11/2026 09:00:10  grep SUPERUSER k8s/01-secret.yaml
+ 1681  27/11/2026 09:00:10  cat > k8s/00-namespace.yaml <<'EOF'
+ 1682  27/11/2026 09:00:10  apiVersion: v1
+ 1683  27/11/2026 09:00:10  kind: Namespace
+ 1684  27/11/2026 09:00:10  metadata:
+ 1685  27/11/2026 09:00:10    name: datta
+ 1686  27/11/2026 09:00:10    labels: {projet: tp-gateway}
+ 1687  27/11/2026 09:00:10  EOF
+ 1688  27/11/2026 09:00:10  cat > k8s/01-secret.yaml <<EOF
+ 1689  27/11/2026 09:00:10  apiVersion: v1
+ 1690  27/11/2026 09:00:10  kind: Secret
+ 1691  27/11/2026 09:00:10  metadata:
+ 1692  27/11/2026 09:00:10    name: datta-secret
+ 1693  27/11/2026 09:00:10    namespace: datta
+ 1694  27/11/2026 09:00:10  type: Opaque
+ 1695  27/11/2026 09:00:10  stringData:
+ 1696  27/11/2026 09:00:10    DB_NAME: datta_db
+ 1697  27/11/2026 09:00:10    DB_USERNAME: datta_user
+ 1698  27/11/2026 09:00:10    DB_PASS: "$(openssl rand -hex 16)"
+ 1699  27/11/2026 09:00:10    DB_ROOT_PASS: "$(openssl rand -hex 16)"
+ 1700  27/11/2026 09:00:10    SECRET_KEY: "$(openssl rand -hex 32)"
+ 1701  27/11/2026 09:00:10    DJANGO_SUPERUSER_PASSWORD: "$(openssl rand -hex 8)"
+ 1702  27/11/2026 09:00:10  EOF
+ 1703  27/11/2026 09:00:10  cat > k8s/02-configmap.yaml <<'EOF'
+ 1704  27/11/2026 09:00:10  apiVersion: v1
+ 1705  27/11/2026 09:00:10  kind: ConfigMap
+ 1706  27/11/2026 09:00:10  metadata:
+ 1707  27/11/2026 09:00:10    name: datta-config
+ 1708  27/11/2026 09:00:10    namespace: datta
+ 1709  27/11/2026 09:00:10  data:
+ 1710  27/11/2026 09:00:10    DB_ENGINE: mysql
+ 1711  27/11/2026 09:00:10    DB_HOST: mariadb
+ 1712  27/11/2026 09:00:10    DB_PORT: "3306"
+ 1713  27/11/2026 09:00:10    SERVER: datta.212.227.20.231.nip.io
+ 1714  27/11/2026 09:00:10    DEBUG: "False"
+ 1715  27/11/2026 09:00:10  EOF
+ 1716  27/11/2026 09:00:10  cat > k8s/10-mariadb-svc.yaml <<'EOF'
+ 1717  27/11/2026 09:00:10  apiVersion: v1
+ 1718  27/11/2026 09:00:10  kind: Service
+ 1719  27/11/2026 09:00:10  metadata:
+ 1720  27/11/2026 09:00:10    name: mariadb
+ 1721  27/11/2026 09:00:10    namespace: datta
+ 1722  27/11/2026 09:00:10    labels: {app: mariadb, tier: database}
+ 1723  27/11/2026 09:00:10  spec:
+ 1724  27/11/2026 09:00:10    clusterIP: None
+ 1725  27/11/2026 09:00:10    selector: {app: mariadb}
+ 1726  27/11/2026 09:00:10    ports:
+ 1727  27/11/2026 09:00:10    - port: 3306
+ 1728  27/11/2026 09:00:10  EOF
+ 1729  27/11/2026 09:00:10  cat > k8s/11-mariadb-statefulset.yaml <<'EOF'
+ 1730  27/11/2026 09:00:10  apiVersion: apps/v1
+ 1731  27/11/2026 09:00:10  kind: StatefulSet
+ 1732  27/11/2026 09:00:10  metadata:
+ 1733  27/11/2026 09:00:10    name: mariadb
+ 1734  27/11/2026 09:00:10    namespace: datta
+ 1735  27/11/2026 09:00:10    labels: {app: mariadb, tier: database}
+ 1736  27/11/2026 09:00:10  spec:
+ 1737  27/11/2026 09:00:10    serviceName: mariadb
+ 1738  27/11/2026 09:00:10    replicas: 1
+ 1739  27/11/2026 09:00:10    selector:
+ 1740  27/11/2026 09:00:10      matchLabels: {app: mariadb}
+ 1741  27/11/2026 09:00:10    template:
+ 1742  27/11/2026 09:00:10      metadata:
+ 1743  27/11/2026 09:00:10        labels: {app: mariadb, tier: database}
+ 1744  27/11/2026 09:00:10      spec:
+ 1745  27/11/2026 09:00:10        containers:
+ 1746  27/11/2026 09:00:10        - name: mariadb
+ 1747  27/11/2026 09:00:10          image: mariadb:10.11
+ 1748  27/11/2026 09:00:10          ports:
+ 1749  27/11/2026 09:00:10          - containerPort: 3306
+ 1750  27/11/2026 09:00:10          env:
+ 1751  27/11/2026 09:00:10          - name: MARIADB_ROOT_PASSWORD
+ 1752  27/11/2026 09:00:10            valueFrom: {secretKeyRef: {name: datta-secret, key: DB_ROOT_PASS}}
+ 1753  27/11/2026 09:00:10          - name: MARIADB_DATABASE
+ 1754  27/11/2026 09:00:10            valueFrom: {secretKeyRef: {name: datta-secret, key: DB_NAME}}
+ 1755  27/11/2026 09:00:10          - name: MARIADB_USER
+ 1756  27/11/2026 09:00:10            valueFrom: {secretKeyRef: {name: datta-secret, key: DB_USERNAME}}
+ 1757  27/11/2026 09:00:10          - name: MARIADB_PASSWORD
+ 1758  27/11/2026 09:00:10            valueFrom: {secretKeyRef: {name: datta-secret, key: DB_PASS}}
+ 1759  27/11/2026 09:00:10          readinessProbe:
+ 1760  27/11/2026 09:00:10            exec: {command: ["healthcheck.sh", "--connect", "--innodb_initialized"]}
+ 1761  27/11/2026 09:00:10            initialDelaySeconds: 10
+ 1762  27/11/2026 09:00:10            periodSeconds: 10
+ 1763  27/11/2026 09:00:10          resources:
+ 1764  27/11/2026 09:00:10            requests: {cpu: 100m, memory: 256Mi}
+ 1765  27/11/2026 09:00:10            limits: {cpu: 500m, memory: 512Mi}
+ 1766  27/11/2026 09:00:10          volumeMounts:
+ 1767  27/11/2026 09:00:10          - name: data
+ 1768  27/11/2026 09:00:10            mountPath: /var/lib/mysql
+ 1769  27/11/2026 09:00:10    volumeClaimTemplates:
+ 1770  27/11/2026 09:00:10    - metadata:
+ 1771  27/11/2026 09:00:10        name: data
+ 1772  27/11/2026 09:00:10      spec:
+ 1773  27/11/2026 09:00:10        accessModes: [ReadWriteOnce]
+ 1774  27/11/2026 09:00:10        resources:
+ 1775  27/11/2026 09:00:10          requests: {storage: 1Gi}
+ 1776  27/11/2026 09:00:10  EOF
+ 1777  27/11/2026 09:00:10  cat > k8s/20-migrate-job.yaml <<'EOF'
+ 1778  27/11/2026 09:00:10  apiVersion: batch/v1
+ 1779  27/11/2026 09:00:10  kind: Job
+ 1780  27/11/2026 09:00:10  metadata:
+ 1781  27/11/2026 09:00:10    name: datta-migrate
+ 1782  27/11/2026 09:00:10    namespace: datta
+ 1783  27/11/2026 09:00:10  spec:
+ 1784  27/11/2026 09:00:10    backoffLimit: 10
+ 1785  27/11/2026 09:00:10    template:
+ 1786  27/11/2026 09:00:10      spec:
+ 1787  27/11/2026 09:00:10        restartPolicy: OnFailure
+ 1788  27/11/2026 09:00:10        containers:
+ 1789  27/11/2026 09:00:10        - name: migrate
+ 1790  27/11/2026 09:00:10          image: localhost:5000/datta-able:1.0
+ 1791  27/11/2026 09:00:10          command: ["sh", "-c", "python manage.py migrate --noinput && (python manage.py createsuperuser --noinput || true)"]
+ 1792  27/11/2026 09:00:10          envFrom:
+ 1793  27/11/2026 09:00:10          - configMapRef: {name: datta-config}
+ 1794  27/11/2026 09:00:10          - secretRef: {name: datta-secret}
+ 1795  27/11/2026 09:00:10          env:
+ 1796  27/11/2026 09:00:10          - {name: DJANGO_SUPERUSER_USERNAME, value: admin}
+ 1797  27/11/2026 09:00:10          - {name: DJANGO_SUPERUSER_EMAIL, value: admin@datta.local}
+ 1798  27/11/2026 09:00:10  EOF
+ 1799  27/11/2026 09:00:10  cat > k8s/30-app-deployment.yaml <<'EOF'
+ 1800  27/11/2026 09:00:10  apiVersion: apps/v1
+ 1801  27/11/2026 09:00:10  kind: Deployment
+ 1802  27/11/2026 09:00:10  metadata:
+ 1803  27/11/2026 09:00:10    name: datta-able
+ 1804  27/11/2026 09:00:10    namespace: datta
+ 1805  27/11/2026 09:00:10    labels: {app: datta-able, tier: frontend}
+ 1806  27/11/2026 09:00:10  spec:
+ 1807  27/11/2026 09:00:10    replicas: 3
+ 1808  27/11/2026 09:00:10    selector:
+ 1809  27/11/2026 09:00:10      matchLabels: {app: datta-able}
+ 1810  27/11/2026 09:00:10    template:
+ 1811  27/11/2026 09:00:10      metadata:
+ 1812  27/11/2026 09:00:10        labels: {app: datta-able, tier: frontend}
+ 1813  27/11/2026 09:00:10      spec:
+ 1814  27/11/2026 09:00:10        containers:
+ 1815  27/11/2026 09:00:10        - name: datta-able
+ 1816  27/11/2026 09:00:10          image: localhost:5000/datta-able:1.0
+ 1817  27/11/2026 09:00:10          ports:
+ 1818  27/11/2026 09:00:10          - containerPort: 5005
+ 1819  27/11/2026 09:00:10          envFrom:
+ 1820  27/11/2026 09:00:10          - configMapRef: {name: datta-config}
+ 1821  27/11/2026 09:00:10          - secretRef: {name: datta-secret}
+ 1822  27/11/2026 09:00:10          readinessProbe:
+ 1823  27/11/2026 09:00:10            httpGet:
+ 1824  27/11/2026 09:00:10              path: /login/
+ 1825  27/11/2026 09:00:10              port: 5005
+ 1826  27/11/2026 09:00:10              httpHeaders: [{name: Host, value: localhost}]
+ 1827  27/11/2026 09:00:10          livenessProbe:
+ 1828  27/11/2026 09:00:10            httpGet:
+ 1829  27/11/2026 09:00:10              path: /login/
+ 1830  27/11/2026 09:00:10              port: 5005
+ 1831  27/11/2026 09:00:10              httpHeaders: [{name: Host, value: localhost}]
+ 1832  27/11/2026 09:00:10            initialDelaySeconds: 20
+ 1833  27/11/2026 09:00:10          resources:
+ 1834  27/11/2026 09:00:10            requests: {cpu: 100m, memory: 160Mi}
+ 1835  27/11/2026 09:00:10            limits: {cpu: 500m, memory: 384Mi}
+ 1836  27/11/2026 09:00:10  EOF
+ 1837  27/11/2026 09:00:10  cat > k8s/31-app-svc.yaml <<'EOF'
+ 1838  27/11/2026 09:00:10  apiVersion: v1
+ 1839  27/11/2026 09:00:10  kind: Service
+ 1840  27/11/2026 09:00:10  metadata:
+ 1841  27/11/2026 09:00:10    name: datta-able
+ 1842  27/11/2026 09:00:10    namespace: datta
+ 1843  27/11/2026 09:00:10    labels: {app: datta-able}
+ 1844  27/11/2026 09:00:10  spec:
+ 1845  27/11/2026 09:00:10    type: ClusterIP
+ 1846  27/11/2026 09:00:10    selector: {app: datta-able}
+ 1847  27/11/2026 09:00:10    ports:
+ 1848  27/11/2026 09:00:10    - port: 80
+ 1849  27/11/2026 09:00:10      targetPort: 5005
+ 1850  27/11/2026 09:00:10  EOF
+ 1851  27/11/2026 09:00:10  cat > k8s/40-gatewayclass.yaml <<'EOF'
+ 1852  27/11/2026 09:00:10  apiVersion: gateway.networking.k8s.io/v1
+ 1853  27/11/2026 09:00:10  kind: GatewayClass
+ 1854  27/11/2026 09:00:10  metadata:
+ 1855  27/11/2026 09:00:10    name: datta-gwc
+ 1856  27/11/2026 09:00:10  spec:
+ 1857  27/11/2026 09:00:10    controllerName: gateway.envoyproxy.io/gatewayclass-controller
+ 1858  27/11/2026 09:00:10  EOF
+ 1859  27/11/2026 09:00:10  cat > k8s/41-gateway.yaml <<'EOF'
+ 1860  27/11/2026 09:00:10  apiVersion: gateway.networking.k8s.io/v1
+ 1861  27/11/2026 09:00:10  kind: Gateway
+ 1862  27/11/2026 09:00:10  metadata:
+ 1863  27/11/2026 09:00:10    name: datta-gw
+ 1864  27/11/2026 09:00:10    namespace: datta
+ 1865  27/11/2026 09:00:10  spec:
+ 1866  27/11/2026 09:00:10    gatewayClassName: datta-gwc
+ 1867  27/11/2026 09:00:10    listeners:
+ 1868  27/11/2026 09:00:10    - name: http
+ 1869  27/11/2026 09:00:10      protocol: HTTP
+ 1870  27/11/2026 09:00:10      port: 80
+ 1871  27/11/2026 09:00:10      hostname: datta.212.227.20.231.nip.io
+ 1872  27/11/2026 09:00:10      allowedRoutes:
+ 1873  27/11/2026 09:00:10        namespaces: {from: Same}
+ 1874  27/11/2026 09:00:10  EOF
+ 1875  27/11/2026 09:00:10  cat > k8s/42-httproute.yaml <<'EOF'
+ 1876  27/11/2026 09:00:10  apiVersion: gateway.networking.k8s.io/v1
+ 1877  27/11/2026 09:00:10  kind: HTTPRoute
+ 1878  27/11/2026 09:00:10  metadata:
+ 1879  27/11/2026 09:00:10    name: datta-route
+ 1880  27/11/2026 09:00:10    namespace: datta
+ 1881  27/11/2026 09:00:10  spec:
+ 1882  27/11/2026 09:00:10    parentRefs:
+ 1883  27/11/2026 09:00:10    - name: datta-gw
+ 1884  27/11/2026 09:00:10    hostnames: [datta.212.227.20.231.nip.io]
+ 1885  27/11/2026 09:00:10    rules:
+ 1886  27/11/2026 09:00:10    - matches:
+ 1887  27/11/2026 09:00:10      - path: {type: PathPrefix, value: /}
+ 1888  27/11/2026 09:00:10      backendRefs:
+ 1889  27/11/2026 09:00:10      - name: datta-able
+ 1890  27/11/2026 09:00:10        port: 80
+ 1891  27/11/2026 09:00:10  EOF
+ 1892  27/11/2026 09:00:10  ls k8s/
+ 1893  27/11/2026 09:00:10  grep SUPERUSER k8s/01-secret.yaml
+ 1894  27/11/2026 09:00:10  kubectl apply -f k8s/00-namespace.yaml -f k8s/01-secret.yaml -f k8s/02-configmap.yaml               -f k8s/10-mariadb-svc.yaml -f k8s/11-mariadb-statefulset.yaml
+ 1895  27/11/2026 09:00:10  kubectl rollout status statefulset/mariadb -n datta --timeout=300s
+ 1896  27/11/2026 09:00:10  kubectl apply -f k8s/20-migrate-job.yaml
+ 1897  27/11/2026 09:00:10  kubectl wait --for=condition=complete job/datta-migrate -n datta --timeout=300s
+ 1898  27/11/2026 09:00:10  kubectl logs job/datta-migrate -n datta | tail -5
+ 1899  27/11/2026 09:00:10  kubectl apply -f k8s/30-app-deployment.yaml -f k8s/31-app-svc.yaml
+ 1900  27/11/2026 09:00:10  kubectl rollout status deployment/datta-able -n datta --timeout=300s
+ 1901  27/11/2026 09:00:10  kubectl apply -f k8s/40-gatewayclass.yaml -f k8s/41-gateway.yaml -f k8s/42-httproute.yaml
+ 1902  27/11/2026 09:00:10  sleep 20
+ 1903  27/11/2026 09:00:10  kubectl get gatewayclass,gateway,httproute -n datta
+ 1904  27/11/2026 09:00:10  kubectl get all,pvc -n datta
+ 1905  27/11/2026 09:00:10  kubectl get pods,svc -n envoy-gateway-system
+ 1906  27/11/2026 09:00:10  kubectl describe gateway datta-gw -n datta | grep -A3 "Programmed"
+ 1907  27/11/2026 09:00:10  curl -s -o /dev/null -w "%{http_code}\n" -H "Host: datta.212.227.20.231.nip.io" http://$(minikube ip):30708/login/
+ 1908  27/11/2026 09:00:10  nohup socat TCP-LISTEN:8080,fork,reuseaddr TCP:$(minikube ip):30708 > socat.log 2>&1 &
+ 1909  27/11/2026 09:00:10  ls -l k8s/
+ 1910  27/11/2026 09:00:10  cat 20-migrate-job.yaml
+ 1911  27/11/2026 09:00:10  cat k8s/ 20-migrate-job.yaml
+ 1912  27/11/2026 09:00:10  cat k8s/20-migrate-job.yaml
+ 1913  27/11/2026 09:00:10  pkill -f "socat TCP-LISTEN"
+ 1914  27/11/2026 09:00:10  kubectl delete -f k8s/
+ 1915  27/11/2026 09:00:10  kubectl get ns datta
+ 1916  27/11/2026 09:00:10  kubectl get gatewayclass
+ 1917  27/11/2026 09:00:10  kubectl get pods -n envoy-gateway-system
+ 1918  27/11/2026 09:00:10  ss -tln | grep -E '5000|8080'
+ 1919  27/11/2026 09:00:10  cd
+ 1920  27/11/2026 09:00:15  git config --global user.name "Fabien RIVAS"
+ 1921  27/11/2026 09:00:37  git config --global user.email "rivas.fabien.sn@gmail.com"
+ 1922  27/11/2026 09:00:44  git config --global init.defaultBranch main
+ 1923  27/11/2026 09:00:50  echo 'export HISTTIMEFORMAT="%d/%m/%Y %H:%M:%S  "' >> ~/.bashrc
+ 1924  27/11/2026 09:00:55  echo 'export HISTSIZE=10000 HISTFILESIZE=20000' >> ~/.bashrc
+ 1925  27/11/2026 09:01:00  source ~/.bashrc
+ 1926  27/11/2026 09:01:07  git --version
+ 1927  27/11/2026 09:01:14  docker --version
+ 1928  27/11/2026 09:01:20  minikube version
+ 1929  27/11/2026 09:01:25  kubectl version --client
+ 1930  27/11/2026 09:01:32  git config --global --list
+ 1931  27/11/2026 09:12:23  ssh-keygen -t ed25519 -C "rivas.fabien.sn@gmail.com" -f ~/.ssh/id_ed25519_github -N ""
+ 1932  27/11/2026 09:12:35  cat >> ~/.ssh/config <<'EOF'
+Host github.com
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/id_ed25519_github
+  IdentitiesOnly yes
+EOF
+
+ 1933  27/11/2026 09:12:45  chmod 600 ~/.ssh/config
+ 1934  27/11/2026 09:12:51  cat ~/.ssh/id_ed25519_github.pub
+ 1935  27/11/2026 09:15:11  ssh -T git@github.com
+ 1936  27/11/2026 09:16:01  mkdir -p ~/e5-kubernetes-r-27-11-2026 && cd ~/e5-kubernetes-r-27-11-2026
+ 1937  27/11/2026 09:16:06  mkdir -p apps k8s docs logs secrets
+ 1938  27/11/2026 09:16:12  touch apps/.gitkeep k8s/.gitkeep docs/.gitkeep logs/.gitkeep
+ 1939  27/11/2026 09:16:20  cat > .gitignore <<'EOF'
+# Données sensibles : ne jamais committer
+secrets/
+*.env
+.env*
+*.key
+*.pem
+
+# Fichiers temporaires
+__pycache__/
+*.pyc
+node_modules/
+EOF
+
+ 1940  27/11/2026 09:16:32  cat > README.md <<'EOF'
+# Projet E5 - Virtual Datacenter Automation (Kubernetes)
+
+**Auteur :** Fabien RIVAS (projet réalisé seul) - ESTIAM Tarbes
+**Empreinte :** `r-27-11-2026`
+
+## Objectif
+MVP e-commerce hautement disponible et résilient sur Kubernetes (Minikube),
+composé de 3 applications prod-ready, dont une boutique avec paiement Stripe (mode test).
+
+## Arborescence
+- `apps/` : code source et Dockerfiles des applications
+- `k8s/` : manifests Kubernetes (un fichier par ressource)
+- `docs/` : rapport, schéma d'architecture
+- `logs/` : historique des commandes et logs des frameworks
+- `ERREURS.md` : erreurs rencontrées et résolutions
+- `secrets/` : valeurs sensibles **(exclu du dépôt)**
+EOF
+
+ 1941  27/11/2026 09:16:40  cat > ERREURS.md <<'EOF'
+# Erreurs rencontrées
+
+Chaque erreur est documentée avec : objectif recherché, commande, erreur affichée, logs, résolution.
+
+---
+EOF
+
+ 1942  27/11/2026 09:16:48  find . -not -path './.git*' | sort
+ 1943  27/11/2026 09:16:57  git init
+ 1944  27/11/2026 09:17:03  git remote add origin git@github.com:Fab1en444/e5-kubernetes-r-27-11-2026.git
+ 1945  27/11/2026 09:17:08  git add .
+ 1946  27/11/2026 09:17:14  git status
+ 1947  27/11/2026 09:17:20  git commit -m "init: structure du projet E5, README, .gitignore et fichier d'erreurs"
+ 1948  27/11/2026 09:17:30  git push -u origin main
+ 1949  27/11/2026 09:17:36  git log --oneline
+ 1950  27/11/2026 09:23:09  nproc
+ 1951  27/11/2026 09:23:15  free -h
+ 1952  27/11/2026 09:23:20  df -h /
+ 1953  27/11/2026 09:23:24  minikube profile list
+ 1954  27/11/2026 09:23:31  pkill -f "socat TCP-LISTEN" ; true
+ 1955  27/11/2026 09:23:39  minikube delete --all
+ 1956  27/11/2026 09:24:10  minikube profile list
+ 1957  27/11/2026 09:28:36  cd ~/e5-kubernetes-r-27-11-2026
+ 1958  27/11/2026 09:28:41  mkdir -p scripts
+ 1959  27/11/2026 09:28:49  cat > scripts/00-swap-vm.sh <<'EOF'
+#!/bin/bash
+# Projet E5 - r-27-11-2026
+# Ajout d'un swap de 4 Go pour sécuriser la mémoire de la VM (3,8 Go de RAM)
+set -e
+
+SWAPFILE=/swapfile-r-27-11-2026
+
+fallocate -l 4G "$SWAPFILE"
+chmod 600 "$SWAPFILE"
+mkswap "$SWAPFILE"
+swapon "$SWAPFILE"
+
+# Activation permanente au redémarrage
+grep -q "$SWAPFILE" /etc/fstab || echo "$SWAPFILE none swap sw 0 0" >> /etc/fstab
+
+# Le swap n'est utilisé qu'en dernier recours (la RAM reste prioritaire)
+echo "vm.swappiness=10" > /etc/sysctl.d/99-swap-r-27-11-2026.conf
+sysctl -p /etc/sysctl.d/99-swap-r-27-11-2026.conf
+EOF
+
+ 1960  27/11/2026 09:28:54  chmod +x scripts/00-swap-vm.sh
+ 1961  27/11/2026 09:28:58  sudo ./scripts/00-swap-vm.sh
+ 1962  27/11/2026 09:29:17  nproc
+ 1963  27/11/2026 09:29:22  free -h
+ 1964  27/11/2026 09:29:27  swapon --show
+ 1965  27/11/2026 09:29:48  sudo swapon --show
+ 1966  27/11/2026 09:30:18  cat >> ERREURS.md <<'EOF'
+
+## Erreur 1 - `swapon: command not found`
+- **Objectif** : vérifier que le swap de 4 Go est bien actif.
+- **Commande** : `swapon --show`
+- **Erreur** : `-bash: swapon: command not found`
+- **Cause** : `swapon` est un binaire d'administration situé dans `/sbin`, qui n'est pas dans le PATH d'un utilisateur non-root sous Debian.
+- **Résolution** : exécuter la commande avec les droits root : `sudo swapon --show`.
+EOF
+
+ 1967  27/11/2026 09:30:24  git add scripts/00-swap-vm.sh ERREURS.md
+ 1968  27/11/2026 09:30:30  git commit -m "feat(vm): ajout d'un swap de 4 Go + doc erreur swapon"
+ 1969  27/11/2026 09:30:39  git push
+ 1970  27/11/2026 09:31:18  cd ~/e5-kubernetes-r-27-11-2026
+ 1971  27/11/2026 09:31:25  at > scripts/01-cluster.sh <<'EOF'
+#!/bin/bash
+# Projet E5 - r-27-11-2026
+# Création du cluster Minikube du projet
+set -e
+
+PROFILE=cluster-r-27-11-2026
+
+# Cluster mono-nœud, limité à 2,5 Go de RAM (la VM héberge aussi d'autres services)
+# CNI Calico : nécessaire pour que les NetworkPolicy soient appliquées
+minikube start -p "$PROFILE" \
+  --driver=docker \
+  --kubernetes-version=v1.37.0 \
+  --cpus=4 \
+  --memory=2560 \
+  --cni=calico
+
+# Ce profil devient le profil par défaut des commandes minikube
+minikube profile "$PROFILE"
+
+# Addons : métriques (HPA, kubectl top) et registry d'images interne
+minikube addons enable metrics-server -p "$PROFILE"
+minikube addons enable registry -p "$PROFILE"
+EOF
+
+ 1972  27/11/2026 09:31:33  chmod +x scripts/01-cluster.sh
+ 1973  27/11/2026 09:31:40  ./scripts/01-cluster.sh
+ 1974  27/11/2026 09:31:52  kubectl wait --for=condition=Ready pods --all -n kube-system --timeout=300s
+ 1975  27/11/2026 09:32:13  cat > scripts/01-cluster.sh <<'EOF'
+#!/bin/bash
+# Projet E5 - r-27-11-2026
+# Création du cluster Minikube du projet
+set -e
+
+PROFILE=cluster-r-27-11-2026
+
+# Cluster mono-nœud, limité à 2,5 Go de RAM (la VM héberge aussi d'autres services)
+# CNI Calico : nécessaire pour que les NetworkPolicy soient appliquées
+minikube start -p "$PROFILE" \
+  --driver=docker \
+  --kubernetes-version=v1.37.0 \
+  --cpus=4 \
+  --memory=2560 \
+  --cni=calico
+
+# Ce profil devient le profil par défaut des commandes minikube
+minikube profile "$PROFILE"
+
+# Addons : métriques (HPA, kubectl top) et registry d'images interne
+minikube addons enable metrics-server -p "$PROFILE"
+minikube addons enable registry -p "$PROFILE"
+EOF
+
+ 1976  27/11/2026 09:32:18  wc -l scripts/01-cluster.sh
+ 1977  27/11/2026 09:32:25  head -3 scripts/01-cluster.sh
+ 1978  27/11/2026 09:33:17  ./scripts/01-cluster.sh
+ 1979  27/11/2026 09:34:21  kubectl wait --for=condition=Ready pods --all -n kube-system --timeout=300s
+ 1980  27/11/2026 09:35:36  minikube profile list
+ 1981  27/11/2026 09:35:42  kubectl get nodes -o wide
+ 1982  27/11/2026 09:35:47  kubectl get pods -A
+ 1983  27/11/2026 09:38:41  git add scripts/01-cluster.sh
+ 1984  27/11/2026 09:38:48  git commit -m "feat(cluster): création du cluster minikube avec Calico, metrics-server et registry"
+ 1985  27/11/2026 09:38:53  git push
+ 1986  27/11/2026 09:39:43  cd ~/e5-kubernetes-r-27-11-2026
+ 1987  27/11/2026 09:39:49  mkdir -p k8s/00-namespace && rm -f k8s/.gitkeep
+ 1988  27/11/2026 09:39:54  cat > k8s/00-namespace/namespace.yaml <<'EOF'
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ecommerce-r-27-11-2026
+  labels:
+    projet: e5-r-27-11-2026
+    client: ecommerce
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/warn: restricted
+EOF
+
+ 1989  27/11/2026 09:40:01  cat > k8s/00-namespace/resourcequota.yaml <<'EOF'
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: quota-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  hard:
+    pods: "30"
+    requests.cpu: "2"
+    requests.memory: 1536Mi
+    limits.cpu: "6"
+    limits.memory: 4Gi
+    persistentvolumeclaims: "5"
+    requests.storage: 10Gi
+    services: "15"
+EOF
+
+ 1990  27/11/2026 09:40:07  cat > k8s/00-namespace/limitrange.yaml <<'EOF'
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: limits-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  limits:
+  - type: Container
+    defaultRequest: {cpu: 50m, memory: 64Mi}
+    default: {cpu: 500m, memory: 256Mi}
+    max: {cpu: "1", memory: 1Gi}
+EOF
+
+ 1991  27/11/2026 09:40:20  cat > k8s/00-namespace/networkpolicy-default-deny.yaml <<'EOF'
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+EOF
+
+ 1992  27/11/2026 09:40:29  cat > k8s/00-namespace/networkpolicy-allow-dns.yaml <<'EOF'
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  podSelector: {}
+  policyTypes: [Egress]
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels: {kubernetes.io/metadata.name: kube-system}
+      podSelector:
+        matchLabels: {k8s-app: kube-dns}
+    ports:
+    - {protocol: UDP, port: 53}
+    - {protocol: TCP, port: 53}
+EOF
+
+ 1993  27/11/2026 09:40:37  kubectl apply -f k8s/00-namespace/
+ 1994  27/11/2026 09:40:58  cd ~/e5-kubernetes-r-27-11-2026/k8s/00-namespace
+ 1995  27/11/2026 09:41:04  mv namespace.yaml 01-namespace.yaml
+ 1996  27/11/2026 09:41:10  mv resourcequota.yaml 02-resourcequota.yaml
+ 1997  27/11/2026 09:41:16  mv limitrange.yaml 03-limitrange.yaml
+ 1998  27/11/2026 09:41:21  mv networkpolicy-default-deny.yaml 04-networkpolicy-default-deny.yaml
+ 1999  27/11/2026 09:41:28  mv networkpolicy-allow-dns.yaml 05-networkpolicy-allow-dns.yaml
+ 2000  27/11/2026 09:41:33  ls
+ 2001  27/11/2026 09:41:38  cd ~/e5-kubernetes-r-27-11-2026
+ 2002  27/11/2026 09:41:44  kubectl apply -f k8s/00-namespace/
+ 2003  27/11/2026 09:44:43  kubectl get ns ecommerce-r-27-11-2026 --show-labels
+ 2004  27/11/2026 09:44:49  kubectl describe resourcequota -n ecommerce-r-27-11-2026
+ 2005  27/11/2026 09:44:55  kubectl describe limitrange -n ecommerce-r-27-11-2026
+ 2006  27/11/2026 09:45:02  kubectl get networkpolicy -n ecommerce-r-27-11-2026
+ 2007  27/11/2026 09:45:08  kubectl run test-isolation-r-27-11-2026 -n ecommerce-r-27-11-2026 --rm -it --restart=Never   --image=busybox:1.36 -- sh -c 'nslookup kubernetes.default; echo "--- test internet :"; wget -T 5 -qO- http://example.com || echo "BLOQUE par la NetworkPolicy"'
+ 2008  27/11/2026 09:45:49  kubectl run test-isolation-r-27-11-2026 -n ecommerce-r-27-11-2026 --rm -it --restart=Never   --image=busybox:1.36 -- sh -c 'nslookup kubernetes.default.svc.cluster.local; echo "--- test internet :"; wget -T 5 -qO- http://example.com || echo "BLOQUE par la NetworkPolicy"'
+ 2009  27/11/2026 09:47:50  git add k8s/ ERREURS.md
+ 2010  27/11/2026 09:47:57  git commit -m "feat(k8s): namespace isolé avec ResourceQuota, LimitRange et NetworkPolicy default-deny"
+ 2011  27/11/2026 09:48:04  git push
+ 2012  27/11/2026 09:48:34  cd ~/e5-kubernetes-r-27-11-2026
+ 2013  27/11/2026 09:48:44  cat > scripts/02-secrets.sh <<'EOF'
+#!/bin/bash
+# Projet E5 - r-27-11-2026
+# Génère les mots de passe (si absents) dans secrets/ (exclu de git)
+# puis crée ou met à jour les Secrets Kubernetes correspondants.
+set -e
+
+NS=ecommerce-r-27-11-2026
+cd "$(dirname "$0")/.."
+mkdir -p secrets
+
+gen() { openssl rand -hex 16; }
+
+[ -f secrets/mariadb-root.env ] || echo "MARIADB_ROOT_PASSWORD=$(gen)" > secrets/mariadb-root.env
+[ -f secrets/shop-db.env ] || printf "DB_NAME=shop_db\nDB_USER=shop_user\nDB_PASSWORD=%s\n" "$(gen)" > secrets/shop-db.env
+[ -f secrets/backoffice-db.env ] || printf "DB_NAME=backoffice_db\nDB_USER=backoffice_user\nDB_PASSWORD=%s\n" "$(gen)" > secrets/backoffice-db.env
+chmod 600 secrets/*.env
+
+for s in mariadb-root shop-db backoffice-db; do
+  kubectl create secret generic "${s}-secret-r-27-11-2026" -n "$NS" \
+    --from-env-file="secrets/${s}.env" --dry-run=client -o yaml | kubectl apply -f -
+done
+EOF
+
+ 2014  27/11/2026 09:48:57  chmod +x scripts/02-secrets.sh
+ 2015  27/11/2026 09:49:04  ./scripts/02-secrets.sh
+ 2016  27/11/2026 09:49:24  cd /tmp
+ 2017  27/11/2026 09:49:30  curl -LO "https://dl.k8s.io/release/v1.37.0/bin/linux/amd64/kubectl"
+ 2018  27/11/2026 09:49:36  curl -LO "https://dl.k8s.io/release/v1.37.0/bin/linux/amd64/kubectl.sha256"
+ 2019  27/11/2026 09:49:44  echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check
+ 2020  27/11/2026 09:49:52  sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+ 2021  27/11/2026 09:50:04  rm -f kubectl kubectl.sha256
+ 2022  27/11/2026 09:50:09  cd ~/e5-kubernetes-r-27-11-2026
+ 2023  27/11/2026 09:50:34  grep -n "alias kubectl" ~/.bashrc ~/.bash_aliases 2>/dev/null
+ 2024  27/11/2026 09:51:00  sed -i '/alias kubectl=/d' ~/.bashrc
+ 2025  27/11/2026 09:51:05  unalias kubectl 2>/dev/null; hash -r
+ 2026  27/11/2026 09:51:12  type kubectl
+ 2027  27/11/2026 09:51:19  kubectl version
+ 2028  27/11/2026 09:51:30  ./scripts/02-secrets.sh
+ 2029  27/11/2026 09:51:37  ls -l secrets/
+ 2030  27/11/2026 09:51:45  kubectl get secrets -n ecommerce-r-27-11-2026
+ 2031  27/11/2026 09:51:51  git status --short
+ 2032  27/11/2026 09:55:55  mkdir -p k8s/10-mariadb
+ 2033  27/11/2026 09:56:02  cat > k8s/10-mariadb/01-configmap-config.yaml <<'EOF'
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mariadb-config-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: mariadb-r-27-11-2026, tier: database}
+data:
+  custom-r-27-11-2026.cnf: |
+    [mysqld]
+    innodb_buffer_pool_size = 96M
+    max_connections = 60
+    performance_schema = OFF
+    skip-name-resolve
+    character-set-server = utf8mb4
+    collation-server = utf8mb4_unicode_ci
+EOF
+
+ 2034  27/11/2026 09:56:09  cat > k8s/10-mariadb/02-configmap-init.yaml <<'EOF'
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mariadb-init-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: mariadb-r-27-11-2026, tier: database}
+data:
+  init-databases.sh: |
+    #!/bin/bash
+    # Exécuté une seule fois, au premier démarrage (volume vide)
+    set -e
+    mariadb -uroot -p"${MARIADB_ROOT_PASSWORD}" <<EOSQL
+    CREATE DATABASE IF NOT EXISTS \`${SHOP_DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CREATE USER IF NOT EXISTS '${SHOP_DB_USER}'@'%' IDENTIFIED BY '${SHOP_DB_PASSWORD}';
+    GRANT ALL PRIVILEGES ON \`${SHOP_DB_NAME}\`.* TO '${SHOP_DB_USER}'@'%';
+    CREATE DATABASE IF NOT EXISTS \`${BACKOFFICE_DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CREATE USER IF NOT EXISTS '${BACKOFFICE_DB_USER}'@'%' IDENTIFIED BY '${BACKOFFICE_DB_PASSWORD}';
+    GRANT ALL PRIVILEGES ON \`${BACKOFFICE_DB_NAME}\`.* TO '${BACKOFFICE_DB_USER}'@'%';
+    FLUSH PRIVILEGES;
+    EOSQL
+EOF
+
+ 2035  27/11/2026 09:56:15  cat > k8s/10-mariadb/03-service.yaml <<'EOF'
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: mariadb-r-27-11-2026, tier: database}
+spec:
+  clusterIP: None
+  selector: {app: mariadb-r-27-11-2026}
+  ports:
+  - name: mysql
+    port: 3306
+EOF
+
+ 2036  27/11/2026 09:56:26  cat > k8s/10-mariadb/04-statefulset.yaml <<'EOF'
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: mariadb-r-27-11-2026, tier: database}
+spec:
+  serviceName: mariadb-r-27-11-2026
+  replicas: 1
+  selector:
+    matchLabels: {app: mariadb-r-27-11-2026}
+  template:
+    metadata:
+      labels: {app: mariadb-r-27-11-2026, tier: database}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+      - name: mariadb
+        image: mariadb:10.11
+        ports:
+        - {name: mysql, containerPort: 3306}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities: {drop: [ALL]}
+        env:
+        - name: MARIADB_ROOT_PASSWORD
+          valueFrom: {secretKeyRef: {name: mariadb-root-secret-r-27-11-2026, key: MARIADB_ROOT_PASSWORD}}
+        - name: SHOP_DB_NAME
+          valueFrom: {secretKeyRef: {name: shop-db-secret-r-27-11-2026, key: DB_NAME}}
+        - name: SHOP_DB_USER
+          valueFrom: {secretKeyRef: {name: shop-db-secret-r-27-11-2026, key: DB_USER}}
+        - name: SHOP_DB_PASSWORD
+          valueFrom: {secretKeyRef: {name: shop-db-secret-r-27-11-2026, key: DB_PASSWORD}}
+        - name: BACKOFFICE_DB_NAME
+          valueFrom: {secretKeyRef: {name: backoffice-db-secret-r-27-11-2026, key: DB_NAME}}
+        - name: BACKOFFICE_DB_USER
+          valueFrom: {secretKeyRef: {name: backoffice-db-secret-r-27-11-2026, key: DB_USER}}
+        - name: BACKOFFICE_DB_PASSWORD
+          valueFrom: {secretKeyRef: {name: backoffice-db-secret-r-27-11-2026, key: DB_PASSWORD}}
+        startupProbe:
+          exec: {command: ["healthcheck.sh", "--connect", "--innodb_initialized"]}
+          periodSeconds: 5
+          failureThreshold: 30
+        readinessProbe:
+          exec: {command: ["healthcheck.sh", "--connect", "--innodb_initialized"]}
+          periodSeconds: 10
+        livenessProbe:
+          exec: {command: ["healthcheck.sh", "--connect"]}
+          periodSeconds: 20
+        resources:
+          requests: {cpu: 100m, memory: 192Mi}
+          limits: {cpu: 500m, memory: 384Mi}
+        volumeMounts:
+        - {name: data, mountPath: /var/lib/mysql}
+        - {name: config, mountPath: /etc/mysql/conf.d/custom-r-27-11-2026.cnf, subPath: custom-r-27-11-2026.cnf}
+        - {name: init, mountPath: /docker-entrypoint-initdb.d}
+      volumes:
+      - name: config
+        configMap: {name: mariadb-config-r-27-11-2026}
+      - name: init
+        configMap: {name: mariadb-init-r-27-11-2026}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      labels: {app: mariadb-r-27-11-2026}
+    spec:
+      accessModes: [ReadWriteOnce]
+      resources:
+        requests: {storage: 2Gi}
+EOF
+
+ 2037  27/11/2026 09:56:36  cat > k8s/10-mariadb/05-networkpolicy-ingress.yaml <<'EOF'
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mariadb-ingress-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  podSelector:
+    matchLabels: {app: mariadb-r-27-11-2026}
+  policyTypes: [Ingress]
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels: {acces-mariadb: "true"}
+    ports:
+    - {protocol: TCP, port: 3306}
+EOF
+
+ 2038  27/11/2026 09:56:42  cat > k8s/10-mariadb/06-networkpolicy-egress-clients.yaml <<'EOF'
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mariadb-clients-egress-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  podSelector:
+    matchLabels: {acces-mariadb: "true"}
+  policyTypes: [Egress]
+  egress:
+  - to:
+    - podSelector:
+        matchLabels: {app: mariadb-r-27-11-2026}
+    ports:
+    - {protocol: TCP, port: 3306}
+EOF
+
+ 2039  27/11/2026 09:56:49  ls k8s/10-mariadb/
+ 2040  27/11/2026 09:56:54  kubectl apply -f k8s/10-mariadb/
+ 2041  27/11/2026 09:57:00  kubectl rollout status statefulset/mariadb-r-27-11-2026 -n ecommerce-r-27-11-2026 --timeout=300s
+ 2042  27/11/2026 09:57:12  kubectl get statefulset,pod,svc,pvc -n ecommerce-r-27-11-2026
+ 2043  27/11/2026 09:57:17  kubectl logs mariadb-r-27-11-2026-0 -n ecommerce-r-27-11-2026 | tail -15
+ 2044  27/11/2026 09:57:37  kubectl logs mariadb-r-27-11-2026-0 -n ecommerce-r-27-11-2026 | grep -i "initdb\|init-databases"
+ 2045  27/11/2026 09:57:44  kubectl exec -n ecommerce-r-27-11-2026 mariadb-r-27-11-2026-0 -- sh -c   'mariadb -uroot -p"$MARIADB_ROOT_PASSWORD" -e "SHOW DATABASES; SELECT user,host FROM mysql.user;"'
+ 2046  27/11/2026 09:57:51  kubectl run test-sans-label-r-27-11-2026 -n ecommerce-r-27-11-2026 --rm -it --restart=Never --image=busybox:1.36   -- sh -c 'nc -zv -w 3 mariadb-r-27-11-2026 3306 && echo OK || echo "BLOQUE"'
+ 2047  27/11/2026 09:58:01  kubectl run test-avec-label-r-27-11-2026 -n ecommerce-r-27-11-2026 --rm -it --restart=Never --image=busybox:1.36   --labels=acces-mariadb=true -- sh -c 'nc -zv -w 3 mariadb-r-27-11-2026 3306 && echo OK || echo "BLOQUE"'
+ 2048  27/11/2026 09:58:24  sed -i 's|        env:\n||' k8s/10-mariadb/04-statefulset.yaml
+ 2049  27/11/2026 09:58:34  sed -i '/        env:/a\        - name: MARIADB_ROOT_HOST\n          value: localhost' k8s/10-mariadb/04-statefulset.yaml
+ 2050  27/11/2026 09:58:40  grep -A3 "        env:" k8s/10-mariadb/04-statefulset.yaml
+ 2051  27/11/2026 09:59:12  kubectl exec -n ecommerce-r-27-11-2026 mariadb-r-27-11-2026-0 -- sh -c   'mariadb -uroot -p"$MARIADB_ROOT_PASSWORD" -e "DROP USER IF EXISTS '"'"'root'"'"'@'"'"'%'"'"'; SELECT user,host FROM mysql.user;"'
+ 2052  27/11/2026 09:59:18  kubectl apply -f k8s/10-mariadb/04-statefulset.yaml
+ 2053  27/11/2026 09:59:19  kubectl rollout status statefulset/mariadb-r-27-11-2026 -n ecommerce-r-27-11-2026
+ 2054  27/11/2026 09:59:34  kubectl exec -n ecommerce-r-27-11-2026 mariadb-r-27-11-2026-0 -- sh -c   'mariadb -uroot -p"$MARIADB_ROOT_PASSWORD" -e "SHOW DATABASES;"'
+ 2055  27/11/2026 10:01:23  git add scripts/02-secrets.sh k8s/10-mariadb/ ERREURS.md
+ 2056  27/11/2026 10:01:29  git status --short
+ 2057  27/11/2026 10:01:35  git commit -m "feat(mariadb): StatefulSet MariaDB partagé (shop_db, backoffice_db), secrets, NetworkPolicy et durcissement root"
+ 2058  27/11/2026 10:01:47  git push
+ 2059  27/11/2026 10:03:07  cd ~/e5-kubernetes-r-27-11-2026
+ 2060  27/11/2026 10:03:36  cat > scripts/02-secrets.sh <<'EOF'
+#!/bin/bash
+# Projet E5 - r-27-11-2026
+# Génère les valeurs sensibles (si absentes) dans secrets/ (exclu de git),
+# puis crée ou met à jour un Secret Kubernetes pour chaque fichier secrets/*.env
+set -e
+
+NS=ecommerce-r-27-11-2026
+cd "$(dirname "$0")/.."
+mkdir -p secrets
+
+gen() { openssl rand -hex 16; }
+
+[ -f secrets/mariadb-root.env ] || echo "MARIADB_ROOT_PASSWORD=$(gen)" > secrets/mariadb-root.env
+[ -f secrets/shop-db.env ] || printf "DB_NAME=shop_db\nDB_USER=shop_user\nDB_PASSWORD=%s\n" "$(gen)" > secrets/shop-db.env
+[ -f secrets/backoffice-db.env ] || printf "DB_NAME=backoffice_db\nDB_USER=backoffice_user\nDB_PASSWORD=%s\n" "$(gen)" > secrets/backoffice-db.env
+[ -f secrets/redis.env ] || echo "REDIS_PASSWORD=$(gen)" > secrets/redis.env
+chmod 600 secrets/*.env
+
+for f in secrets/*.env; do
+  s=$(basename "$f" .env)
+  kubectl create secret generic "${s}-secret-r-27-11-2026" -n "$NS" \
+    --from-env-file="$f" --dry-run=client -o yaml | kubectl apply -f -
+done
+EOF
+
+ 2061  27/11/2026 10:03:44  ./scripts/02-secrets.sh
+ 2062  27/11/2026 10:03:52  kubectl get secrets -n ecommerce-r-27-11-2026
+ 2063  27/11/2026 10:04:01  mkdir -p k8s/20-redis
+ 2064  27/11/2026 10:04:07  cat > k8s/20-redis/01-configmap.yaml <<'EOF'
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: redis-r-27-11-2026, tier: cache}
+data:
+  redis.conf: |
+    # Persistance : journal AOF écrit sur disque chaque seconde
+    appendonly yes
+    appendfsync everysec
+    save ""
+    dir /data
+    # Mémoire limitée ; seules les clés avec expiration (paniers) peuvent être évincées
+    maxmemory 48mb
+    maxmemory-policy volatile-lru
+    # Commandes dangereuses désactivées
+    rename-command FLUSHALL ""
+    rename-command FLUSHDB ""
+    rename-command CONFIG ""
+EOF
+
+ 2065  27/11/2026 10:04:13  cat > k8s/20-redis/02-service.yaml <<'EOF'
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: redis-r-27-11-2026, tier: cache}
+spec:
+  selector: {app: redis-r-27-11-2026}
+  ports:
+  - name: redis
+    port: 6379
+EOF
+
+ 2066  27/11/2026 10:04:32  cat > k8s/20-redis/03-statefulset.yaml <<'EOF'
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: redis-r-27-11-2026, tier: cache}
+spec:
+  serviceName: redis-r-27-11-2026
+  replicas: 1
+  selector:
+    matchLabels: {app: redis-r-27-11-2026}
+  template:
+    metadata:
+      labels: {app: redis-r-27-11-2026, tier: cache}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+      - name: redis
+        image: redis:7.2-alpine
+        args: ["redis-server", "/etc/redis/redis.conf", "--requirepass", "$(REDIS_PASSWORD)"]
+        ports:
+        - {name: redis, containerPort: 6379}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: {drop: [ALL]}
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom: {secretKeyRef: {name: redis-secret-r-27-11-2026, key: REDIS_PASSWORD}}
+        - name: REDISCLI_AUTH
+          valueFrom: {secretKeyRef: {name: redis-secret-r-27-11-2026, key: REDIS_PASSWORD}}
+        readinessProbe:
+          exec: {command: ["sh", "-c", "redis-cli ping | grep -q PONG"]}
+          periodSeconds: 10
+        livenessProbe:
+          exec: {command: ["sh", "-c", "redis-cli ping | grep -q PONG"]}
+          initialDelaySeconds: 10
+          periodSeconds: 20
+        resources:
+          requests: {cpu: 25m, memory: 48Mi}
+          limits: {cpu: 200m, memory: 96Mi}
+        volumeMounts:
+        - {name: data, mountPath: /data}
+        - {name: config, mountPath: /etc/redis}
+      volumes:
+      - name: config
+        configMap: {name: redis-config-r-27-11-2026}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      labels: {app: redis-r-27-11-2026}
+    spec:
+      accessModes: [ReadWriteOnce]
+      resources:
+        requests: {storage: 1Gi}
+EOF
+
+ 2067  27/11/2026 10:04:43  cat > k8s/20-redis/04-networkpolicy-ingress.yaml <<'EOF'
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redis-ingress-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  podSelector:
+    matchLabels: {app: redis-r-27-11-2026}
+  policyTypes: [Ingress]
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels: {acces-redis: "true"}
+    ports:
+    - {protocol: TCP, port: 6379}
+EOF
+
+ 2068  27/11/2026 10:04:49  cat > k8s/20-redis/05-networkpolicy-egress-clients.yaml <<'EOF'
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redis-clients-egress-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  podSelector:
+    matchLabels: {acces-redis: "true"}
+  policyTypes: [Egress]
+  egress:
+  - to:
+    - podSelector:
+        matchLabels: {app: redis-r-27-11-2026}
+    ports:
+    - {protocol: TCP, port: 6379}
+EOF
+
+ 2069  27/11/2026 10:04:56  ls k8s/20-redis/
+ 2070  27/11/2026 10:05:01  kubectl apply -f k8s/20-redis/
+ 2071  27/11/2026 10:05:10  kubectl rollout status statefulset/redis-r-27-11-2026 -n ecommerce-r-27-11-2026 --timeout=180s
+ 2072  27/11/2026 10:05:17  kubectl get statefulset,pod,svc,pvc -n ecommerce-r-27-11-2026 -l app=redis-r-27-11-2026
+ 2073  27/11/2026 10:05:23  kubectl exec -n ecommerce-r-27-11-2026 redis-r-27-11-2026-0 -- redis-cli SET test-r-27-11-2026 ok
+ 2074  27/11/2026 10:05:28  kubectl exec -n ecommerce-r-27-11-2026 redis-r-27-11-2026-0 -- redis-cli GET test-r-27-11-2026
+ 2075  27/11/2026 10:05:33  kubectl exec -n ecommerce-r-27-11-2026 redis-r-27-11-2026-0 -- redis-cli INFO persistence | grep aof_enabled
+ 2076  27/11/2026 10:05:47  kubectl exec -n ecommerce-r-27-11-2026 redis-r-27-11-2026-0 -- sh -c 'REDISCLI_AUTH= redis-cli GET test-r-27-11-2026'
+ 2077  27/11/2026 10:09:26  git add scripts/02-secrets.sh k8s/20-redis/
+ 2078  27/11/2026 10:09:32  git status --short
+ 2079  27/11/2026 10:09:39  git commit -m "feat(redis): StatefulSet Redis persistant (AOF) protégé par mot de passe et NetworkPolicy"
+ 2080  27/11/2026 10:09:46  git push
+ 2081  27/11/2026 10:10:10  cd ~/e5-kubernetes-r-27-11-2026
+ 2082  27/11/2026 10:10:15  mkdir -p apps/panier-api && rm -f apps/.gitkeep
+ 2083  27/11/2026 10:10:28  cat > apps/panier-api/main.py <<'EOF'
+"""API Panier - Projet E5 (r-27-11-2026)
+Microservice qui stocke les paniers des clients dans Redis (clé/valeur avec expiration).
+"""
+import os
+import socket
+
+import redis
+from fastapi import FastAPI, HTTPException, Response
+from pydantic import BaseModel, Field
+
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
+PANIER_TTL = int(os.getenv("PANIER_TTL_SECONDES", "86400"))
+POD = socket.gethostname()
+
+r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD,
+                decode_responses=True, socket_timeout=2, socket_connect_timeout=2)
+
+app = FastAPI(title="API Panier - E5 r-27-11-2026",
+              description="Gestion des paniers de la boutique (stockage Redis).",
+              version="1.0.0")
+
+
+class Article(BaseModel):
+    produit_id: int = Field(gt=0)
+    quantite: int = Field(default=1, gt=0, le=99)
+
+
+def cle(panier_id: str) -> str:
+    if not panier_id.isalnum() or len(panier_id) > 64:
+        raise HTTPException(status_code=400, detail="identifiant de panier invalide")
+    return f"panier:{panier_id}"
+
+
+@app.middleware("http")
+async def entete_pod(request, call_next):
+    reponse = await call_next(request)
+    reponse.headers["X-Pod"] = POD
+    return reponse
+
+
+@app.get("/healthz", tags=["sante"])
+def healthz():
+    return {"statut": "ok", "pod": POD}
+
+
+@app.get("/readyz", tags=["sante"])
+def readyz(response: Response):
+    try:
+        r.ping()
+        return {"statut": "pret", "redis": "ok", "pod": POD}
+    except redis.RedisError:
+        response.status_code = 503
+        return {"statut": "indisponible", "redis": "injoignable", "pod": POD}
+
+
+@app.get("/paniers/{panier_id}", tags=["paniers"])
+def lire_panier(panier_id: str):
+    articles = r.hgetall(cle(panier_id))
+    return {"panier_id": panier_id,
+            "articles": {int(k): int(v) for k, v in articles.items()},
+            "pod": POD}
+
+
+@app.post("/paniers/{panier_id}/articles", tags=["paniers"], status_code=201)
+def ajouter_article(panier_id: str, article: Article):
+    k = cle(panier_id)
+    pipe = r.pipeline()
+    pipe.hincrby(k, str(article.produit_id), article.quantite)
+    pipe.expire(k, PANIER_TTL)
+    pipe.execute()
+    return lire_panier(panier_id)
+
+
+@app.delete("/paniers/{panier_id}/articles/{produit_id}", tags=["paniers"])
+def retirer_article(panier_id: str, produit_id: int):
+    r.hdel(cle(panier_id), str(produit_id))
+    return lire_panier(panier_id)
+
+
+@app.delete("/paniers/{panier_id}", tags=["paniers"], status_code=204)
+def vider_panier(panier_id: str):
+    r.delete(cle(panier_id))
+    return Response(status_code=204)
+EOF
+
+ 2084  27/11/2026 10:10:40  cat > apps/panier-api/requirements.txt <<'EOF'
+fastapi==0.115.12
+uvicorn[standard]==0.34.2
+redis==5.2.1
+EOF
+
+ 2085  27/11/2026 10:10:58  printf '__pycache__/\n*.pyc\n' > apps/panier-api/.dockerignore
+ 2086  27/11/2026 10:11:05  cat > apps/panier-api/Dockerfile <<'EOF'
+# Étape 1 : installation des dépendances dans un environnement virtuel
+FROM python:3.12-slim AS builder
+WORKDIR /app
+COPY requirements.txt .
+RUN python -m venv /venv && /venv/bin/pip install --no-cache-dir -r requirements.txt
+
+# Étape 2 : image finale minimale, sans outils de build, utilisateur non-root
+FROM python:3.12-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PATH="/venv/bin:$PATH"
+RUN useradd -r -u 10001 appuser
+WORKDIR /app
+COPY --from=builder /venv /venv
+COPY main.py .
+USER 10001
+EXPOSE 8000
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*", "--no-server-header"]
+EOF
+
+ 2087  27/11/2026 10:11:15  cat > scripts/03-relais-registry.sh <<'EOF'
+#!/bin/bash
+# Projet E5 - r-27-11-2026
+# Relais local (127.0.0.1:5000, non exposé sur Internet) vers le registry interne de minikube
+if pgrep -f "TCP-LISTEN:5000" > /dev/null; then
+  echo "Relais registry déjà actif"
+else
+  nohup socat TCP-LISTEN:5000,bind=127.0.0.1,reuseaddr,fork TCP:"$(minikube ip)":5000 \
+    > /tmp/relais-registry-r-27-11-2026.log 2>&1 &
+  sleep 2
+fi
+curl -s http://localhost:5000/v2/_catalog; echo
+EOF
+
+ 2088  27/11/2026 10:11:21  chmod +x scripts/03-relais-registry.sh
+ 2089  27/11/2026 10:11:27  ./scripts/03-relais-registry.sh
+ 2090  27/11/2026 10:11:40  docker build -t localhost:5000/panier-api-r-27-11-2026:1.0 apps/panier-api 2>&1 | tee logs/docker-build-panier-api-r-27-11-2026.log
+ 2091  27/11/2026 10:11:57  docker push localhost:5000/panier-api-r-27-11-2026:1.0
+ 2092  27/11/2026 10:12:04  curl -s http://localhost:5000/v2/_catalog; echo
+ 2093  27/11/2026 10:12:09  docker images | grep panier-api
+ 2094  27/11/2026 10:12:35  mkdir -p k8s/30-panier-api
+ 2095  27/11/2026 10:12:42  cat > k8s/30-panier-api/01-configmap.yaml <<'EOF'
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: panier-api-config-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: panier-api-r-27-11-2026, tier: api}
+data:
+  REDIS_HOST: redis-r-27-11-2026
+  REDIS_PORT: "6379"
+  PANIER_TTL_SECONDES: "86400"
+EOF
+
+ 2096  27/11/2026 10:12:54  cat > k8s/30-panier-api/02-deployment.yaml <<'EOF'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: panier-api-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: panier-api-r-27-11-2026, tier: api}
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: {maxSurge: 1, maxUnavailable: 0}
+  selector:
+    matchLabels: {app: panier-api-r-27-11-2026}
+  template:
+    metadata:
+      labels:
+        app: panier-api-r-27-11-2026
+        tier: api
+        acces-redis: "true"
+    spec:
+      terminationGracePeriodSeconds: 20
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+      - name: panier-api
+        image: localhost:5000/panier-api-r-27-11-2026:1.0
+        ports:
+        - {name: http, containerPort: 8000}
+        envFrom:
+        - configMapRef: {name: panier-api-config-r-27-11-2026}
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom: {secretKeyRef: {name: redis-secret-r-27-11-2026, key: REDIS_PASSWORD}}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: {drop: [ALL]}
+        startupProbe:
+          httpGet: {path: /healthz, port: http}
+          periodSeconds: 3
+          failureThreshold: 20
+        readinessProbe:
+          httpGet: {path: /readyz, port: http}
+          periodSeconds: 10
+        livenessProbe:
+          httpGet: {path: /healthz, port: http}
+          periodSeconds: 20
+        lifecycle:
+          preStop:
+            exec: {command: ["sleep", "5"]}
+        resources:
+          requests: {cpu: 50m, memory: 64Mi}
+          limits: {cpu: 300m, memory: 160Mi}
+EOF
+
+ 2097  27/11/2026 10:13:14  cat > k8s/30-panier-api/03-service.yaml <<'EOF'
+apiVersion: v1
+kind: Service
+metadata:
+  name: panier-api-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: panier-api-r-27-11-2026, tier: api}
+spec:
+  selector: {app: panier-api-r-27-11-2026}
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+EOF
+
+ 2098  27/11/2026 10:13:22  cat > k8s/30-panier-api/04-poddisruptionbudget.yaml <<'EOF'
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: panier-api-pdb-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels: {app: panier-api-r-27-11-2026}
+EOF
+
+ 2099  27/11/2026 10:13:28  cat > k8s/30-panier-api/05-hpa.yaml <<'EOF'
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: panier-api-hpa-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: panier-api-r-27-11-2026
+  minReplicas: 3
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target: {type: Utilization, averageUtilization: 70}
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 120
+EOF
+
+ 2100  27/11/2026 10:13:34  cat > k8s/30-panier-api/06-networkpolicy-ingress.yaml <<'EOF'
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: panier-api-ingress-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  podSelector:
+    matchLabels: {app: panier-api-r-27-11-2026}
+  policyTypes: [Ingress]
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels: {acces-panier-api: "true"}
+    ports:
+    - {protocol: TCP, port: 8000}
+EOF
+
+ 2101  27/11/2026 10:14:05  cat > k8s/30-panier-api/07-networkpolicy-egress-clients.yaml <<'EOF'
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: panier-api-clients-egress-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  podSelector:
+    matchLabels: {acces-panier-api: "true"}
+  policyTypes: [Egress]
+  egress:
+  - to:
+    - podSelector:
+        matchLabels: {app: panier-api-r-27-11-2026}
+    ports:
+    - {protocol: TCP, port: 8000}
+EOF
+
+ 2102  27/11/2026 10:14:16  ls k8s/30-panier-api/
+ 2103  27/11/2026 10:14:31  kubectl apply -f k8s/30-panier-api/
+ 2104  27/11/2026 10:14:38  kubectl rollout status deployment/panier-api-r-27-11-2026 -n ecommerce-r-27-11-2026 --timeout=180s
+ 2105  27/11/2026 10:14:45  kubectl get deploy,pod,svc,pdb,hpa -n ecommerce-r-27-11-2026 -l app=panier-api-r-27-11-2026
+ 2106  27/11/2026 10:14:50  kubectl get hpa,pdb -n ecommerce-r-27-11-2026
+ 2107  27/11/2026 10:15:03  kubectl run test-api-r-27-11-2026 -n ecommerce-r-27-11-2026 --rm -it --restart=Never   --image=curlimages/curl:8.11.1 --labels=acces-panier-api=true -- sh -c '
+curl -s http://panier-api-r-27-11-2026/readyz; echo
+curl -s -X POST -H "Content-Type: application/json" -d "{\"produit_id\":1,\"quantite\":2}" http://panier-api-r-27-11-2026/paniers/demo123/articles; echo
+curl -s -X POST -H "Content-Type: application/json" -d "{\"produit_id\":3}" http://panier-api-r-27-11-2026/paniers/demo123/articles; echo
+echo "--- Répartition de charge :"
+for i in 1 2 3 4 5 6; do curl -s -D - -o /dev/null http://panier-api-r-27-11-2026/healthz | grep -i x-pod; done'
+ 2108  27/11/2026 10:16:21  kubectl exec -n ecommerce-r-27-11-2026 redis-r-27-11-2026-0 -- redis-cli HGETALL panier:demo123
+ 2109  27/11/2026 10:16:26  kubectl exec -n ecommerce-r-27-11-2026 redis-r-27-11-2026-0 -- redis-cli TTL panier:demo123
+ 2110  27/11/2026 10:16:31  kubectl get hpa -n ecommerce-r-27-11-2026
+ 2111  27/11/2026 10:16:38  kubectl run test-api-sans-label-r-27-11-2026 -n ecommerce-r-27-11-2026 --rm -it --restart=Never   --image=curlimages/curl:8.11.1 -- sh -c 'curl -s -m 5 http://panier-api-r-27-11-2026/healthz || echo "BLOQUE"'
+ 2112  27/11/2026 10:16:47  kubectl logs -n ecommerce-r-27-11-2026 -l app=panier-api-r-27-11-2026 --tail=-1 --prefix > logs/k8s-panier-api-r-27-11-2026.log
+ 2113  27/11/2026 10:16:54  wc -l logs/k8s-panier-api-r-27-11-2026.log
+ 2114  27/11/2026 10:21:21  kubectl run test-api-r-27-11-2026 -n ecommerce-r-27-11-2026 --rm -it --restart=Never   --image=curlimages/curl:8.11.1 --labels=acces-panier-api=true -- sh -c '
+sleep 3
+echo "=== Etat de l API :"
+curl -s http://panier-api-r-27-11-2026/readyz; echo
+echo "=== Ajout d articles au panier demo456 :"
+curl -s -X POST -H "Content-Type: application/json" -d "{\"produit_id\":1,\"quantite\":2}" http://panier-api-r-27-11-2026/paniers/demo456/articles; echo
+curl -s -X POST -H "Content-Type: application/json" -d "{\"produit_id\":3}" http://panier-api-r-27-11-2026/paniers/demo456/articles; echo
+echo "=== Repartition de charge (en-tete X-Pod) :"
+for i in 1 2 3 4 5 6 7 8 9; do curl -s -D - -o /dev/null http://panier-api-r-27-11-2026/healthz | grep -i x-pod; done'
+ 2115  27/11/2026 10:22:00  git add apps/panier-api/ k8s/30-panier-api/ scripts/03-relais-registry.sh logs/
+ 2116  27/11/2026 10:22:06  git status --short
+ 2117  27/11/2026 10:22:13  git commit -m "feat(panier-api): API FastAPI des paniers (Redis), image optimisée, Deployment HA avec PDB, HPA et NetworkPolicy"
+ 2118  27/11/2026 10:22:22  git push
+ 2119  27/11/2026 10:22:56  cd ~/e5-kubernetes-r-27-11-2026
+ 2120  27/11/2026 10:23:51  unset SK
+ 2121  27/11/2026 10:24:02  history -w
+ 2122  27/11/2026 10:24:07  history | grep -c 'sk_test_'
+ 2123  27/11/2026 10:24:12  grep -c 'sk_test_' ~/.bash_history
+ 2124  27/11/2026 10:24:27  history | grep -c 'sk_test_51U'
+ 2125  27/11/2026 10:24:44  read -rsp "Clé secrète Stripe (sk_test_...) : " SK; echo
+ 2126  27/11/2026 10:25:01  read -rsp "Clé publique Stripe (pk_test_...) : " PK; echo
+ 2127  27/11/2026 10:25:15  printf "STRIPE_SECRET_KEY=%s\nSTRIPE_PUBLISHABLE_KEY=%s\n" "$SK" "$PK" > secrets/stripe.env
+ 2128  27/11/2026 10:25:20  chmod 600 secrets/stripe.env
+ 2129  27/11/2026 10:25:28  unset SK PK
+ 2130  27/11/2026 10:25:33  ./scripts/02-secrets.sh
+ 2131  27/11/2026 10:25:44  kubectl get secrets -n ecommerce-r-27-11-2026
+ 2132  27/11/2026 10:25:48  grep -c "sk_test" ~/.bash_history || echo "Aucune clé dans l'historique : OK"
+ 2133  27/11/2026 10:25:59  cut -c1-30 secrets/stripe.env
+ 2134  27/11/2026 10:29:13  cd ~/e5-kubernetes-r-27-11-2026
+ 2135  27/11/2026 10:29:18  mkdir -p apps/boutique/templates
+ 2136  27/11/2026 10:29:33  cat > apps/boutique/app.py <<'EOF'
+"""Boutique TechShop - Projet E5 (r-27-11-2026)
+Catalogue (MariaDB) + panier (API Panier / Redis) + paiement Stripe (mode test).
+"""
+import os
+import socket
+import uuid
+
+import requests
+import stripe
+from flask import Flask, flash, redirect, render_template, request, session, url_for
+from sqlalchemy import bindparam, create_engine, text
+
+POD = socket.gethostname()
+PANIER_API = os.getenv("PANIER_API_URL", "http://localhost:8000")
+BASE_URL = os.getenv("BASE_URL", "http://localhost:5000")
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
+DATABASE_URL = os.getenv("DATABASE_URL") or "mysql+pymysql://{}:{}@{}:{}/{}?charset=utf8mb4".format(
+    os.getenv("DB_USER"), os.getenv("DB_PASSWORD"), os.getenv("DB_HOST"),
+    os.getenv("DB_PORT", "3306"), os.getenv("DB_NAME"))
+engine = create_engine(DATABASE_URL, pool_pre_ping=True, pool_recycle=280)
+
+app = Flask(__name__)
+app.secret_key = os.environ["FLASK_SECRET_KEY"]
+
+
+@app.context_processor
+def variables_globales():
+    return {"pod": POD}
+
+
+@app.template_filter("euros")
+def euros(centimes):
+    return f"{centimes / 100:.2f} €".replace(".", ",")
+
+
+def panier_id():
+    """Identifiant du panier du visiteur, conservé dans un cookie de session signé."""
+    session.setdefault("panier_id", uuid.uuid4().hex)
+    return session["panier_id"]
+
+
+def api_panier(methode, chemin, **kwargs):
+    """Appel à l'API Panier (microservice FastAPI)."""
+    r = requests.request(methode, f"{PANIER_API}/paniers/{panier_id()}{chemin}", timeout=3, **kwargs)
+    r.raise_for_status()
+    return r.json() if r.content else None
+
+
+def contenu_panier():
+    articles = api_panier("GET", "")["articles"]
+    if not articles:
+        return [], 0
+    requete = text("SELECT * FROM produits WHERE id IN :ids").bindparams(bindparam("ids", expanding=True))
+    with engine.connect() as c:
+        produits = {p.id: p for p in c.execute(requete, {"ids": [int(i) for i in articles]})}
+    lignes = [{"produit": produits[int(i)], "quantite": q} for i, q in articles.items() if int(i) in produits]
+    total = sum(l["produit"].prix_centimes * l["quantite"] for l in lignes)
+    return lignes, total
+
+
+@app.get("/")
+def catalogue():
+    with engine.connect() as c:
+        produits = c.execute(text("SELECT * FROM produits ORDER BY id")).all()
+    return render_template("catalogue.html", produits=produits)
+
+
+@app.post("/ajouter/<int:produit_id>")
+def ajouter(produit_id):
+    try:
+        api_panier("POST", "/articles", json={"produit_id": produit_id, "quantite": 1})
+        flash("Article ajouté au panier.")
+    except requests.RequestException:
+        flash("Service panier indisponible, réessayez.")
+    return redirect(url_for("catalogue"))
+
+
+@app.get("/panier")
+def panier():
+    lignes, total = contenu_panier()
+    return render_template("panier.html", lignes=lignes, total=total)
+
+
+@app.post("/vider")
+def vider():
+    api_panier("DELETE", "")
+    return redirect(url_for("panier"))
+
+
+@app.post("/payer")
+def payer():
+    """Crée une session de paiement Stripe Checkout et redirige le client vers Stripe."""
+    lignes, _ = contenu_panier()
+    if not lignes:
+        return redirect(url_for("panier"))
+    paiement = stripe.checkout.Session.create(
+        mode="payment",
+        line_items=[{"quantity": l["quantite"],
+                     "price_data": {"currency": "eur", "unit_amount": l["produit"].prix_centimes,
+                                    "product_data": {"name": l["produit"].nom}}} for l in lignes],
+        success_url=f"{BASE_URL}/succes?session_id={{CHECKOUT_SESSION_ID}}",
+        cancel_url=f"{BASE_URL}/panier",
+    )
+    return redirect(paiement.url, code=303)
+
+
+@app.get("/succes")
+def succes():
+    """Retour de Stripe : on vérifie le paiement auprès de Stripe avant d'enregistrer la commande."""
+    paiement = stripe.checkout.Session.retrieve(request.args.get("session_id", ""))
+    if paiement.payment_status != "paid":
+        flash("Paiement non confirmé.")
+        return redirect(url_for("panier"))
+    email = paiement.customer_details.email if paiement.customer_details else None
+    with engine.begin() as c:
+        deja = c.execute(text("SELECT id FROM commandes WHERE stripe_session_id = :s"), {"s": paiement.id}).first()
+        if not deja:  # évite les doublons si la page est rechargée
+            c.execute(text("INSERT INTO commandes (stripe_session_id, email, montant_centimes) VALUES (:s, :e, :m)"),
+                      {"s": paiement.id, "e": email, "m": paiement.amount_total})
+    api_panier("DELETE", "")
+    flash(f"✅ Paiement de {euros(paiement.amount_total)} confirmé, merci !")
+    return redirect(url_for("commandes"))
+
+
+@app.get("/commandes")
+def commandes():
+    with engine.connect() as c:
+        liste = c.execute(text("SELECT * FROM commandes ORDER BY id DESC LIMIT 20")).all()
+    return render_template("commandes.html", commandes=liste)
+
+
+@app.get("/healthz")
+def healthz():
+    return {"statut": "ok", "pod": POD}
+
+
+@app.get("/readyz")
+def readyz():
+    try:
+        with engine.connect() as c:
+            c.execute(text("SELECT 1"))
+        return {"statut": "pret", "pod": POD}
+    except Exception:
+        return {"statut": "base injoignable", "pod": POD}, 503
+EOF
+
+ 2137  27/11/2026 10:29:44  cat > apps/boutique/init_db.py <<'EOF'
+"""Initialisation de la base de la boutique (lancé par un Job Kubernetes).
+Crée les tables et le catalogue de démonstration. Peut être relancé sans risque.
+"""
+from sqlalchemy import text
+
+from app import engine
+
+PRODUITS = [
+    ("Clavier mécanique", "Switches tactiles, rétroéclairage RGB", 8990, "⌨️"),
+    ("Souris sans fil", "Capteur haute précision, 70 h d'autonomie", 4990, "🖱️"),
+    ("Écran 27 pouces", "QHD 165 Hz, dalle IPS", 27900, "🖥️"),
+    ("Casque audio", "Réduction de bruit active", 12900, "🎧"),
+]
+
+with engine.begin() as c:
+    c.execute(text("""CREATE TABLE IF NOT EXISTS produits (
+        id INT AUTO_INCREMENT PRIMARY KEY, nom VARCHAR(100) NOT NULL,
+        description VARCHAR(255) NOT NULL, prix_centimes INT NOT NULL, emoji VARCHAR(16) NOT NULL)"""))
+    c.execute(text("""CREATE TABLE IF NOT EXISTS commandes (
+        id INT AUTO_INCREMENT PRIMARY KEY, stripe_session_id VARCHAR(255) NOT NULL UNIQUE,
+        email VARCHAR(255), montant_centimes INT NOT NULL, cree_le TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"""))
+    if c.execute(text("SELECT COUNT(*) FROM produits")).scalar() == 0:
+        for nom, description, prix, emoji in PRODUITS:
+            c.execute(text("INSERT INTO produits (nom, description, prix_centimes, emoji) VALUES (:n, :d, :p, :e)"),
+                      {"n": nom, "d": description, "p": prix, "e": emoji})
+print("Base de la boutique initialisée.")
+EOF
+
+ 2138  27/11/2026 10:29:54  cat > apps/boutique/templates/base.html <<'EOF'
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>TechShop - E5</title>
+  <style>
+    body { margin: 0; font-family: sans-serif; background: #f4f6fb; color: #1f2937; }
+    header { background: #1e293b; padding: 15px 30px; }
+    header a { color: #fff; text-decoration: none; margin-right: 25px; font-weight: bold; }
+    main { max-width: 950px; margin: 25px auto; padding: 0 20px; }
+    .grille { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .carte, table { background: #fff; border-radius: 10px; padding: 18px; box-shadow: 0 2px 6px #0001; }
+    table { width: 100%; border-collapse: collapse; } td, th { padding: 10px; text-align: left; }
+    button { background: #4f46e5; color: #fff; border: 0; border-radius: 6px; padding: 10px 15px; cursor: pointer; }
+    .info { background: #fef3c7; padding: 10px 30px; }
+    .message { background: #dcfce7; padding: 12px; border-radius: 6px; margin-bottom: 15px; }
+    footer { text-align: center; color: #6b7280; font-size: 13px; margin: 30px; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="{{ url_for('catalogue') }}">🛒 TechShop</a>
+    <a href="{{ url_for('panier') }}">Panier</a>
+    <a href="{{ url_for('commandes') }}">Commandes</a>
+  </header>
+  <div class="info">🧪 Mode test Stripe : carte <b>4242 4242 4242 4242</b>, date future, CVC quelconque.</div>
+  <main>
+    {% for message in get_flashed_messages() %}<div class="message">{{ message }}</div>{% endfor %}
+    {% block contenu %}{% endblock %}
+  </main>
+  <footer>Projet E5 - r-27-11-2026 - page servie par le pod <b>{{ pod }}</b></footer>
+</body>
+</html>
+EOF
+
+ 2139  27/11/2026 10:31:37  cat > apps/boutique/templates/catalogue.html <<'EOF'
+{% extends "base.html" %}
+{% block contenu %}
+<h1>Catalogue</h1>
+<div class="grille">
+  {% for p in produits %}
+  <div class="carte">
+    <h2>{{ p.emoji }} {{ p.nom }}</h2>
+    <p>{{ p.description }}</p>
+    <p><b>{{ p.prix_centimes | euros }}</b></p>
+    <form method="post" action="{{ url_for('ajouter', produit_id=p.id) }}"><button>Ajouter au panier</button></form>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+EOF
+
+ 2140  27/11/2026 10:31:50  cat > apps/boutique/templates/panier.html <<'EOF'
+{% extends "base.html" %}
+{% block contenu %}
+<h1>Mon panier</h1>
+{% if lignes %}
+<table>
+  <tr><th>Produit</th><th>Prix</th><th>Quantité</th></tr>
+  {% for l in lignes %}
+  <tr><td>{{ l.produit.emoji }} {{ l.produit.nom }}</td><td>{{ l.produit.prix_centimes | euros }}</td><td>{{ l.quantite }}</td></tr>
+  {% endfor %}
+  <tr><th colspan="2">Total</th><th>{{ total | euros }}</th></tr>
+</table>
+<br>
+<form method="post" action="{{ url_for('payer') }}" style="display:inline"><button>💳 Payer avec Stripe</button></form>
+<form method="post" action="{{ url_for('vider') }}" style="display:inline"><button>Vider le panier</button></form>
+{% else %}
+<p>Votre panier est vide.</p>
+{% endif %}
+{% endblock %}
+EOF
+
+ 2141  27/11/2026 10:31:58  cat > apps/boutique/templates/commandes.html <<'EOF'
+{% extends "base.html" %}
+{% block contenu %}
+<h1>Commandes payées</h1>
+<table>
+  <tr><th>N°</th><th>Date</th><th>Email</th><th>Montant</th></tr>
+  {% for c in commandes %}
+  <tr><td>{{ c.id }}</td><td>{{ c.cree_le }}</td><td>{{ c.email }}</td><td>{{ c.montant_centimes | euros }}</td></tr>
+  {% else %}
+  <tr><td colspan="4">Aucune commande pour le moment.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}
+EOF
+
+ 2142  27/11/2026 10:32:07  cat > apps/boutique/requirements.txt <<'EOF'
+Flask==3.1.0
+gunicorn==23.0.0
+SQLAlchemy==2.0.36
+PyMySQL==1.1.1
+requests==2.32.3
+stripe==11.4.1
+EOF
+
+ 2143  27/11/2026 10:32:16  printf '__pycache__/\n*.pyc\n' > apps/boutique/.dockerignore
+ 2144  27/11/2026 10:33:41  cat > apps/boutique/Dockerfile <<'EOF'
+# Étape 1 : installation des dépendances dans un environnement virtuel
+FROM python:3.12-slim AS builder
+WORKDIR /app
+COPY requirements.txt .
+RUN python -m venv /venv && /venv/bin/pip install --no-cache-dir -r requirements.txt
+
+# Étape 2 : image finale minimale, utilisateur non-root
+FROM python:3.12-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PATH="/venv/bin:$PATH"
+RUN useradd -r -u 10001 appuser
+WORKDIR /app
+COPY --from=builder /venv /venv
+COPY app.py init_db.py ./
+COPY templates/ templates/
+USER 10001
+EXPOSE 5000
+# 1 worker + 4 threads : économe en mémoire
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "--threads", "4", "--access-logfile", "-", "app:app"]
+EOF
+
+ 2145  27/11/2026 10:33:46  find apps/boutique -type f | sort
+ 2146  27/11/2026 10:33:57  ./scripts/03-relais-registry.sh
+ 2147  27/11/2026 10:34:28  docker build -t localhost:5000/boutique-r-27-11-2026:1.0 apps/boutique 2>&1 | tee logs/docker-build-boutique-r-27-11-2026.log
+ 2148  27/11/2026 10:34:43  docker push localhost:5000/boutique-r-27-11-2026:1.0
+ 2149  27/11/2026 10:34:49  curl -s http://localhost:5000/v2/_catalog; echo
+ 2150  27/11/2026 10:34:54  docker images | grep boutique
+ 2151  27/11/2026 10:35:54  cd ~/e5-kubernetes-r-27-11-2026
+ 2152  27/11/2026 10:36:00  sed -i '/^chmod 600/i [ -f secrets/boutique-app.env ] || echo "FLASK_SECRET_KEY=$(openssl rand -hex 32)" > secrets/boutique-app.env' scripts/02-secrets.sh
+ 2153  27/11/2026 10:36:07  grep -n "boutique-app" scripts/02-secrets.sh
+ 2154  27/11/2026 10:36:12  ./scripts/02-secrets.sh
+ 2155  27/11/2026 10:36:20  kubectl get secrets -n ecommerce-r-27-11-2026
+ 2156  27/11/2026 10:36:33  mkdir -p k8s/40-boutique
+ 2157  27/11/2026 10:36:38  cat > k8s/40-boutique/01-configmap.yaml <<'EOF'
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: boutique-config-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: boutique-r-27-11-2026, tier: frontend}
+data:
+  DB_HOST: mariadb-r-27-11-2026
+  DB_PORT: "3306"
+  PANIER_API_URL: http://panier-api-r-27-11-2026
+  BASE_URL: http://boutique.212.227.20.231.nip.io:8080
+EOF
+
+ 2158  27/11/2026 10:36:46  cat > k8s/40-boutique/02-job-init-db.yaml <<'EOF'
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: boutique-init-db-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: boutique-r-27-11-2026}
+spec:
+  backoffLimit: 6
+  template:
+    metadata:
+      labels: {app: boutique-init-db-r-27-11-2026, acces-mariadb: "true"}
+    spec:
+      restartPolicy: OnFailure
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+      - name: init-db
+        image: localhost:5000/boutique-r-27-11-2026:1.0
+        command: ["python", "init_db.py"]
+        envFrom:
+        - configMapRef: {name: boutique-config-r-27-11-2026}
+        - secretRef: {name: shop-db-secret-r-27-11-2026}
+        - secretRef: {name: boutique-app-secret-r-27-11-2026}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: {drop: [ALL]}
+        resources:
+          requests: {cpu: 50m, memory: 64Mi}
+          limits: {cpu: 200m, memory: 128Mi}
+EOF
+
+ 2159  27/11/2026 10:36:54  cat > k8s/40-boutique/03-deployment.yaml <<'EOF'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: boutique-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: boutique-r-27-11-2026, tier: frontend}
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: {maxSurge: 1, maxUnavailable: 0}
+  selector:
+    matchLabels: {app: boutique-r-27-11-2026}
+  template:
+    metadata:
+      labels:
+        app: boutique-r-27-11-2026
+        tier: frontend
+        acces-mariadb: "true"
+        acces-panier-api: "true"
+        acces-stripe: "true"
+    spec:
+      terminationGracePeriodSeconds: 20
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+      - name: boutique
+        image: localhost:5000/boutique-r-27-11-2026:1.0
+        ports:
+        - {name: http, containerPort: 5000}
+        envFrom:
+        - configMapRef: {name: boutique-config-r-27-11-2026}
+        - secretRef: {name: shop-db-secret-r-27-11-2026}
+        - secretRef: {name: boutique-app-secret-r-27-11-2026}
+        - secretRef: {name: stripe-secret-r-27-11-2026}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: {drop: [ALL]}
+        startupProbe:
+          httpGet: {path: /healthz, port: http}
+          periodSeconds: 3
+          failureThreshold: 20
+        readinessProbe:
+          httpGet: {path: /readyz, port: http}
+          periodSeconds: 10
+        livenessProbe:
+          httpGet: {path: /healthz, port: http}
+          periodSeconds: 20
+        lifecycle:
+          preStop:
+            exec: {command: ["sleep", "5"]}
+        resources:
+          requests: {cpu: 50m, memory: 96Mi}
+          limits: {cpu: 400m, memory: 192Mi}
+        volumeMounts:
+        - {name: tmp, mountPath: /tmp}
+      volumes:
+      - name: tmp
+        emptyDir: {medium: Memory, sizeLimit: 16Mi}
+EOF
+
+ 2160  27/11/2026 10:36:59  cat > k8s/40-boutique/04-service.yaml <<'EOF'
+apiVersion: v1
+kind: Service
+metadata:
+  name: boutique-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: boutique-r-27-11-2026, tier: frontend}
+spec:
+  selector: {app: boutique-r-27-11-2026}
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+EOF
+
+ 2161  27/11/2026 10:37:05  cat > k8s/40-boutique/05-poddisruptionbudget.yaml <<'EOF'
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: boutique-pdb-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels: {app: boutique-r-27-11-2026}
+EOF
+
+ 2162  27/11/2026 10:37:11  cat > k8s/40-boutique/06-hpa.yaml <<'EOF'
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: boutique-hpa-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: boutique-r-27-11-2026
+  minReplicas: 3
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target: {type: Utilization, averageUtilization: 70}
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 120
+EOF
+
+ 2163  27/11/2026 10:37:17  cat > k8s/40-boutique/07-networkpolicy-egress-stripe.yaml <<'EOF'
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: stripe-egress-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  podSelector:
+    matchLabels: {acces-stripe: "true"}
+  policyTypes: [Egress]
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+        except: [10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16]
+    ports:
+    - {protocol: TCP, port: 443}
+EOF
+
+ 2164  27/11/2026 10:37:24  ls k8s/40-boutique/
+ 2165  27/11/2026 10:37:30  kubectl apply -f k8s/40-boutique/
+ 2166  27/11/2026 10:37:36  kubectl wait --for=condition=complete job/boutique-init-db-r-27-11-2026 -n ecommerce-r-27-11-2026 --timeout=180s
+ 2167  27/11/2026 10:37:56  kubectl logs job/boutique-init-db-r-27-11-2026 -n ecommerce-r-27-11-2026
+ 2168  27/11/2026 10:38:03  kubectl rollout status deployment/boutique-r-27-11-2026 -n ecommerce-r-27-11-2026 --timeout=180s
+ 2169  27/11/2026 10:38:08  kubectl get deploy,pod,svc,pdb,hpa -n ecommerce-r-27-11-2026 -l app=boutique-r-27-11-2026
+ 2170  27/11/2026 10:38:21  kubectl port-forward -n ecommerce-r-27-11-2026 svc/boutique-r-27-11-2026 5000:80 > /dev/null 2>&1 &
+ 2171  27/11/2026 10:38:32  rm -f /tmp/cookies.txt
+ 2172  27/11/2026 10:38:38  echo "=== Catalogue :"
+ 2173  27/11/2026 10:38:43  curl -s http://localhost:5000/ | grep -o "<h2>[^<]*</h2>"
+ 2174  27/11/2026 10:38:50  echo "=== Ajout au panier (via l'API Panier) :"
+ 2175  27/11/2026 10:38:55  curl -s -c /tmp/cookies.txt -b /tmp/cookies.txt -X POST http://localhost:5000/ajouter/1 -o /dev/null
+ 2176  27/11/2026 10:39:01  curl -s -c /tmp/cookies.txt -b /tmp/cookies.txt -X POST http://localhost:5000/ajouter/3 -o /dev/null
+ 2177  27/11/2026 10:39:09  curl -s -b /tmp/cookies.txt http://localhost:5000/panier | grep -o "<th>[0-9,]* €</th>"
+ 2178  27/11/2026 10:39:14  echo "=== Création du paiement Stripe :"
+ 2179  27/11/2026 10:39:20  curl -s -b /tmp/cookies.txt -X POST http://localhost:5000/payer -o /dev/null -w "%{http_code} -> %{redirect_url}\n"
+ 2180  27/11/2026 10:39:38  jobs
+ 2181  27/11/2026 10:39:42  curl -s http://localhost:5000/v2/_catalog; echo
+ 2182  27/11/2026 10:39:57  kill %1 2>/dev/null
+ 2183  27/11/2026 10:40:12  kubectl port-forward -n ecommerce-r-27-11-2026 svc/boutique-r-27-11-2026 5050:80 > /tmp/pf-boutique.log 2>&1 &
+ 2184  27/11/2026 10:40:19  cat /tmp/pf-boutique.log
+ 2185  27/11/2026 10:40:24  rm -f /tmp/cookies.txt
+ 2186  27/11/2026 10:40:29  echo "=== Catalogue :"
+ 2187  27/11/2026 10:40:29  curl -s http://localhost:5050/ | grep -o "<h2>[^<]*</h2>"
+ 2188  27/11/2026 10:40:34  echo "=== Ajout au panier (via l'API Panier) :"
+ 2189  27/11/2026 10:40:34  curl -s -c /tmp/cookies.txt -b /tmp/cookies.txt -X POST http://localhost:5050/ajouter/1 -o /dev/null
+ 2190  27/11/2026 10:40:34  curl -s -c /tmp/cookies.txt -b /tmp/cookies.txt -X POST http://localhost:5050/ajouter/3 -o /dev/null
+ 2191  27/11/2026 10:40:35  curl -s -b /tmp/cookies.txt http://localhost:5050/panier | grep -o "<th>[0-9,]* €</th>"
+ 2192  27/11/2026 10:40:42  echo "=== Création du paiement Stripe :"
+ 2193  27/11/2026 10:40:42  curl -s -b /tmp/cookies.txt -X POST http://localhost:5050/payer -o /dev/null -w "%{http_code} -> %{redirect_url}\n"
+ 2194  27/11/2026 10:41:07  kubectl logs -n ecommerce-r-27-11-2026 -l app=boutique-r-27-11-2026 --tail=-1 --prefix > logs/k8s-boutique-r-27-11-2026.log
+ 2195  27/11/2026 10:41:12  kubectl logs job/boutique-init-db-r-27-11-2026 -n ecommerce-r-27-11-2026 > logs/k8s-boutique-init-db-r-27-11-2026.log
+ 2196  27/11/2026 10:44:22  git add apps/boutique/ k8s/40-boutique/ scripts/02-secrets.sh logs/ ERREURS.md
+ 2197  27/11/2026 10:44:28  git status --short
+ 2198  27/11/2026 10:45:06  git add apps/.gitkeep
+ 2199  27/11/2026 10:45:11  git status --short | head -3
+ 2200  27/11/2026 10:45:17  git commit -m "feat(boutique): boutique Flask avec paiement Stripe Checkout, Job d'init, Deployment HA et NetworkPolicy"
+ 2201  27/11/2026 10:45:17  git push
+ 2202  27/11/2026 10:45:28  git log --oneline
+ 2203  27/11/2026 10:48:01  cd ~/e5-kubernetes-r-27-11-2026
+ 2204  27/11/2026 10:48:06  git clone --depth 1 https://github.com/appseed-projects/38452dec-0739-4343-b0a5-bd66a5ddde35 apps/backoffice
+ 2205  27/11/2026 10:48:11  rm -rf apps/backoffice/.git
+ 2206  27/11/2026 10:48:17  ls apps/backoffice
+ 2207  27/11/2026 10:48:23  cat > apps/backoffice/requirements.txt <<'EOF'
+Django==3.2.25
+dj-database-url==0.5.0
+gunicorn==23.0.0
+pytz==2024.1
+sqlparse==0.5.0
+whitenoise==5.3.0
+django-environ==0.8.1
+mysqlclient==2.2.4
+EOF
+
+ 2208  27/11/2026 10:48:29  cat > apps/backoffice/.dockerignore <<'EOF'
+.git
+.env
+env.sample
+*.sqlite3
+__pycache__/
+*.pyc
+nginx/
+docker-compose.yml
+deployer.json
+log.json
+EOF
+
+ 2209  27/11/2026 10:48:38  cat > apps/backoffice/Dockerfile <<'EOF'
+# Étape 1 : build (compilateur + headers MySQL, nécessaires à mysqlclient)
+FROM python:3.10-slim AS builder
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends gcc pkg-config default-libmysqlclient-dev \
+ && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY requirements.txt .
+RUN python -m venv /venv && /venv/bin/pip install --no-cache-dir -r requirements.txt
+COPY . .
+RUN DEBUG=False /venv/bin/python manage.py collectstatic --noinput
+
+# Étape 2 : image finale (bibliothèque client MariaDB uniquement), non-root
+FROM python:3.10-slim
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends libmariadb3 \
+ && rm -rf /var/lib/apt/lists/* \
+ && useradd -r -u 10001 appuser
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PATH="/venv/bin:$PATH" DEBUG=False
+WORKDIR /app
+COPY --from=builder /venv /venv
+COPY --from=builder --chown=10001:10001 /app /app
+USER 10001
+EXPOSE 5005
+CMD ["gunicorn", "--bind", "0.0.0.0:5005", "--workers", "1", "--threads", "2", "--access-logfile", "-", "core.wsgi"]
+EOF
+
+ 2210  27/11/2026 10:48:45  ./scripts/03-relais-registry.sh
+ 2211  27/11/2026 10:49:43  docker build -t localhost:5000/backoffice-r-27-11-2026:1.0 apps/backoffice 2>&1 | tee logs/docker-build-backoffice-r-27-11-2026.log
+ 2212  27/11/2026 10:50:05  docker push localhost:5000/backoffice-r-27-11-2026:1.0
+ 2213  27/11/2026 10:50:10  curl -s http://localhost:5000/v2/_catalog; echo
+ 2214  27/11/2026 10:50:15  docker images | grep backoffice
+ 2215  27/11/2026 10:50:22  sed -i '/^chmod 600/i [ -f secrets/backoffice-app.env ] || { echo "SECRET_KEY=$(gen)$(gen)"; echo "DJANGO_SUPERUSER_PASSWORD=$(gen)"; } > secrets/backoffice-app.env' scripts/02-secrets.sh
+ 2216  27/11/2026 10:50:28  grep -n "backoffice-app" scripts/02-secrets.sh
+ 2217  27/11/2026 10:50:36  ./scripts/02-secrets.sh
+ 2218  27/11/2026 10:50:54  kubectl get secrets -n ecommerce-r-27-11-2026
+ 2219  27/11/2026 10:51:08  mkdir -p k8s/50-backoffice
+ 2220  27/11/2026 10:52:52  grep -c "backoffice-app" scripts/02-secrets.sh
+ 2221  27/11/2026 10:52:53  kubectl get secret backoffice-app-secret-r-27-11-2026 -n ecommerce-r-27-11-2026
+ 2222  27/11/2026 10:53:39  cat > k8s/50-backoffice/01-configmap.yaml <<'EOF'
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backoffice-config-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: backoffice-r-27-11-2026, tier: backoffice}
+data:
+  DB_ENGINE: mysql
+  DB_HOST: mariadb-r-27-11-2026
+  DB_PORT: "3306"
+  DEBUG: "False"
+  SERVER: admin.212.227.20.231.nip.io
+  DJANGO_SUPERUSER_USERNAME: admin
+  DJANGO_SUPERUSER_EMAIL: admin@techshop.local
+EOF
+
+ 2223  27/11/2026 10:53:47  cat > k8s/50-backoffice/02-job-migrate.yaml <<'EOF'
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: backoffice-migrate-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: backoffice-r-27-11-2026}
+spec:
+  backoffLimit: 6
+  template:
+    metadata:
+      labels: {app: backoffice-migrate-r-27-11-2026, acces-mariadb: "true"}
+    spec:
+      restartPolicy: OnFailure
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+      - name: migrate
+        image: localhost:5000/backoffice-r-27-11-2026:1.0
+        command: ["sh", "-c", "python manage.py migrate --noinput && (python manage.py createsuperuser --noinput || true)"]
+        envFrom:
+        - configMapRef: {name: backoffice-config-r-27-11-2026}
+        - secretRef: {name: backoffice-app-secret-r-27-11-2026}
+        env:
+        - name: DB_NAME
+          valueFrom: {secretKeyRef: {name: backoffice-db-secret-r-27-11-2026, key: DB_NAME}}
+        - name: DB_USERNAME
+          valueFrom: {secretKeyRef: {name: backoffice-db-secret-r-27-11-2026, key: DB_USER}}
+        - name: DB_PASS
+          valueFrom: {secretKeyRef: {name: backoffice-db-secret-r-27-11-2026, key: DB_PASSWORD}}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: {drop: [ALL]}
+        resources:
+          requests: {cpu: 50m, memory: 96Mi}
+          limits: {cpu: 300m, memory: 256Mi}
+EOF
+
+ 2224  27/11/2026 10:54:05  cat > k8s/50-backoffice/03-deployment.yaml <<'EOF'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backoffice-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: backoffice-r-27-11-2026, tier: backoffice}
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: {maxSurge: 1, maxUnavailable: 0}
+  selector:
+    matchLabels: {app: backoffice-r-27-11-2026}
+  template:
+    metadata:
+      labels:
+        app: backoffice-r-27-11-2026
+        tier: backoffice
+        acces-mariadb: "true"
+    spec:
+      terminationGracePeriodSeconds: 20
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+      - name: backoffice
+        image: localhost:5000/backoffice-r-27-11-2026:1.0
+        ports:
+        - {name: http, containerPort: 5005}
+        envFrom:
+        - configMapRef: {name: backoffice-config-r-27-11-2026}
+        - secretRef: {name: backoffice-app-secret-r-27-11-2026}
+        env:
+        - name: DB_NAME
+          valueFrom: {secretKeyRef: {name: backoffice-db-secret-r-27-11-2026, key: DB_NAME}}
+        - name: DB_USERNAME
+          valueFrom: {secretKeyRef: {name: backoffice-db-secret-r-27-11-2026, key: DB_USER}}
+        - name: DB_PASS
+          valueFrom: {secretKeyRef: {name: backoffice-db-secret-r-27-11-2026, key: DB_PASSWORD}}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: {drop: [ALL]}
+        startupProbe:
+          httpGet:
+            path: /login/
+            port: http
+            httpHeaders: [{name: Host, value: localhost}]
+          periodSeconds: 3
+          failureThreshold: 20
+        readinessProbe:
+          httpGet:
+            path: /login/
+            port: http
+            httpHeaders: [{name: Host, value: localhost}]
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /login/
+            port: http
+            httpHeaders: [{name: Host, value: localhost}]
+          periodSeconds: 20
+        lifecycle:
+          preStop:
+            exec: {command: ["sleep", "5"]}
+        resources:
+          requests: {cpu: 50m, memory: 96Mi}
+          limits: {cpu: 400m, memory: 256Mi}
+        volumeMounts:
+        - {name: tmp, mountPath: /tmp}
+      volumes:
+      - name: tmp
+        emptyDir: {medium: Memory, sizeLimit: 16Mi}
+EOF
+
+ 2225  27/11/2026 10:54:16  cat > k8s/50-backoffice/04-service.yaml <<'EOF'
+apiVersion: v1
+kind: Service
+metadata:
+  name: backoffice-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: backoffice-r-27-11-2026, tier: backoffice}
+spec:
+  selector: {app: backoffice-r-27-11-2026}
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+EOF
+
+ 2226  27/11/2026 10:54:22  cat > k8s/50-backoffice/05-poddisruptionbudget.yaml <<'EOF'
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: backoffice-pdb-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels: {app: backoffice-r-27-11-2026}
+EOF
+
+ 2227  27/11/2026 10:54:29  cat > k8s/50-backoffice/06-hpa.yaml <<'EOF'
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backoffice-hpa-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backoffice-r-27-11-2026
+  minReplicas: 3
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target: {type: Utilization, averageUtilization: 70}
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 120
+EOF
+
+ 2228  27/11/2026 10:54:33  ls k8s/50-backoffice/
+ 2229  27/11/2026 10:54:33  kubectl apply -f k8s/50-backoffice/
+ 2230  27/11/2026 10:54:33  kubectl wait --for=condition=complete job/backoffice-migrate-r-27-11-2026 -n ecommerce-r-27-11-2026 --timeout=240s
+ 2231  27/11/2026 10:54:43  kubectl logs job/backoffice-migrate-r-27-11-2026 -n ecommerce-r-27-11-2026 | tail -5
+ 2232  27/11/2026 10:54:43  kubectl rollout status deployment/backoffice-r-27-11-2026 -n ecommerce-r-27-11-2026 --timeout=240s
+ 2233  27/11/2026 10:54:45  kubectl get deploy,pod,svc,pdb,hpa -n ecommerce-r-27-11-2026 -l app=backoffice-r-27-11-2026
+ 2234  27/11/2026 10:55:07  kubectl get pdb,hpa -n ecommerce-r-27-11-2026
+ 2235  27/11/2026 10:55:07  kubectl port-forward -n ecommerce-r-27-11-2026 svc/backoffice-r-27-11-2026 5051:80 > /tmp/pf-backoffice.log 2>&1 &
+ 2236  27/11/2026 10:55:07  sleep 3; cat /tmp/pf-backoffice.log
+ 2237  27/11/2026 10:55:10  curl -s -o /dev/null -w "Page de connexion : %{http_code}\n" http://localhost:5051/login/
+ 2238  27/11/2026 10:55:10  curl -s -o /dev/null -w "Fichier CSS (WhiteNoise) : %{http_code}\n" http://localhost:5051/static/assets/css/style.css
+ 2239  27/11/2026 10:55:10  curl -s -o /dev/null -w "Accueil sans connexion : %{http_code} -> %{redirect_url}\n" http://localhost:5051/
+ 2240  27/11/2026 10:55:10  kill %1 2>/dev/null
+ 2241  27/11/2026 10:55:10  kubectl logs -n ecommerce-r-27-11-2026 -l app=backoffice-r-27-11-2026 --tail=-1 --prefix > logs/k8s-backoffice-r-27-11-2026.log
+ 2242  27/11/2026 10:55:11  kubectl logs job/backoffice-migrate-r-27-11-2026 -n ecommerce-r-27-11-2026 > logs/k8s-backoffice-migrate-r-27-11-2026.log
+ 2243  27/11/2026 10:55:30  kill %2 2>/dev/null; jobs
+ 2244  27/11/2026 10:58:35  kubectl get job backoffice-migrate-r-27-11-2026 -n ecommerce-r-27-11-2026
+ 2245  27/11/2026 10:58:35  kubectl logs job/backoffice-migrate-r-27-11-2026 -n ecommerce-r-27-11-2026 | tail -8
+ 2246  27/11/2026 12:05:44  git add apps/backoffice/ k8s/50-backoffice/ scripts/02-secrets.sh logs/
+ 2247  27/11/2026 12:05:50  git status --short | grep -i secret
+ 2248  27/11/2026 12:06:00  git commit -m "feat(backoffice): back-office Django Datta Able optimisé, Job de migrations, Deployment HA"
+ 2249  27/11/2026 12:06:08  git push
+ 2250  27/11/2026 12:06:31  kubectl top node
+ 2251  27/11/2026 12:06:32  free -h
+ 2252  27/11/2026 12:07:10  kubectl apply --server-side -f https://github.com/envoyproxy/gateway/releases/download/v1.10.0/install.yaml > logs/install-envoy-gateway-r-27-11-2026.log
+ 2253  27/11/2026 12:07:20  tail -3 logs/install-envoy-gateway-r-27-11-2026.log
+ 2254  27/11/2026 12:07:26  kubectl wait --timeout=5m -n envoy-gateway-system deployment/envoy-gateway --for=condition=Available
+ 2255  27/11/2026 12:07:32  kubectl get pods -n envoy-gateway-system
+ 2256  27/11/2026 12:08:02  mkdir -p k8s/60-gateway
+ 2257  27/11/2026 12:08:10  cat > k8s/60-gateway/01-envoyproxy.yaml <<'EOF'
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: envoyproxy-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyService:
+        type: NodePort
+      envoyDeployment:
+        replicas: 2
+        container:
+          resources:
+            requests: {cpu: 50m, memory: 64Mi}
+            limits: {cpu: 500m, memory: 256Mi}
+EOF
+
+ 2258  27/11/2026 12:08:15  cat > k8s/60-gateway/02-gatewayclass.yaml <<'EOF'
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: gwc-r-27-11-2026
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+EOF
+
+ 2259  27/11/2026 12:08:29  cat > k8s/60-gateway/03-gateway.yaml <<'EOF'
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: gateway-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  gatewayClassName: gwc-r-27-11-2026
+  infrastructure:
+    parametersRef:
+      group: gateway.envoyproxy.io
+      kind: EnvoyProxy
+      name: envoyproxy-r-27-11-2026
+  listeners:
+  - name: http
+    protocol: HTTP
+    port: 80
+    allowedRoutes:
+      namespaces: {from: Same}
+EOF
+
+ 2260  27/11/2026 12:08:36  cat > k8s/60-gateway/04-httproute-boutique.yaml <<'EOF'
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: route-boutique-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  parentRefs:
+  - name: gateway-r-27-11-2026
+  hostnames: [boutique.212.227.20.231.nip.io]
+  rules:
+  - matches:
+    - path: {type: PathPrefix, value: /}
+    backendRefs:
+    - name: boutique-r-27-11-2026
+      port: 80
+EOF
+
+ 2261  27/11/2026 12:08:42  cat > k8s/60-gateway/05-httproute-backoffice.yaml <<'EOF'
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: route-backoffice-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  parentRefs:
+  - name: gateway-r-27-11-2026
+  hostnames: [admin.212.227.20.231.nip.io]
+  rules:
+  - matches:
+    - path: {type: PathPrefix, value: /}
+    backendRefs:
+    - name: backoffice-r-27-11-2026
+      port: 80
+EOF
+
+ 2262  27/11/2026 12:08:48  cat > k8s/60-gateway/06-networkpolicy-from-gateway.yaml <<'EOF'
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: from-gateway-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  podSelector:
+    matchExpressions:
+    - {key: app, operator: In, values: [boutique-r-27-11-2026, backoffice-r-27-11-2026]}
+  policyTypes: [Ingress]
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels: {kubernetes.io/metadata.name: envoy-gateway-system}
+    ports:
+    - {protocol: TCP, port: 5000}
+    - {protocol: TCP, port: 5005}
+EOF
+
+ 2263  27/11/2026 12:08:57  ls k8s/60-gateway/
+ 2264  27/11/2026 12:08:57  kubectl apply -f k8s/60-gateway/
+ 2265  27/11/2026 12:08:57  sleep 30
+ 2266  27/11/2026 12:09:27  kubectl get gatewayclass,gateway,httproute -n ecommerce-r-27-11-2026
+ 2267  27/11/2026 12:09:32  kubectl get pods,svc -n envoy-gateway-system
+ 2268  27/11/2026 12:10:04  NP=30396
+ 2269  27/11/2026 12:10:04  curl -s -o /dev/null -w "Boutique : %{http_code}\n" -H "Host: boutique.212.227.20.231.nip.io" http://$(minikube ip):$NP/
+ 2270  27/11/2026 12:10:04  curl -s -o /dev/null -w "Back-office : %{http_code}\n" -H "Host: admin.212.227.20.231.nip.io" http://$(minikube ip):$NP/login/
+ 2271  27/11/2026 12:10:05  curl -s -o /dev/null -w "Nom d'hôte inconnu : %{http_code}\n" -H "Host: inconnu.test" http://$(minikube ip):$NP/
+ 2272  27/11/2026 12:10:22  sudo ufw status | grep 8080
+ 2273  27/11/2026 12:10:40  cat > scripts/04-relais-gateway.sh <<'EOF'
+#!/bin/bash
+# Projet E5 - r-27-11-2026
+# Relais du port 8080 de la VM (ouvert uniquement à mon IP par UFW et le pare-feu IONOS)
+# vers le Service NodePort du proxy Envoy de la Gateway
+NP=$(kubectl get svc -n envoy-gateway-system \
+  -l gateway.envoyproxy.io/owning-gateway-name=gateway-r-27-11-2026 \
+  -o jsonpath='{.items[0].spec.ports[0].nodePort}')
+pkill -f "TCP-LISTEN:8080" 2>/dev/null
+nohup socat TCP-LISTEN:8080,fork,reuseaddr TCP:"$(minikube ip)":"$NP" \
+  > /tmp/relais-gateway-r-27-11-2026.log 2>&1 &
+sleep 1
+echo "Relais actif : 8080 -> $(minikube ip):$NP"
+ss -tln | grep 8080
+EOF
+
+ 2274  27/11/2026 12:10:46  chmod +x scripts/04-relais-gateway.sh
+ 2275  27/11/2026 12:10:51  ./scripts/04-relais-gateway.sh
+ 2276  27/11/2026 12:12:24  git add k8s/60-gateway/ scripts/04-relais-gateway.sh logs/
+ 2277  27/11/2026 12:12:29  git commit -m "feat(gateway): exposition boutique et back-office via la Gateway API Envoy (2 proxys, NodePort, NetworkPolicy)"
+ 2278  27/11/2026 12:12:35  git push
+ 2279  27/11/2026 12:15:37  kubectl get gatewayclass,gateway,httproute -n ecommerce-r-27-11-2026
+ 2280  27/11/2026 12:16:10  kubectl get pods,svc -n envoy-gateway-system
+ 2281  27/11/2026 12:16:44  curl -s -o /dev/null -w "Boutique : %{http_code}\n" -H "Host: boutique.212.227.20.231.nip.io" http://$(minikube ip):30396/
+ 2282  27/11/2026 12:16:44  curl -s -o /dev/null -w "Back-office : %{http_code}\n" -H "Host: admin.212.227.20.231.nip.io" http://$(minikube ip):30396/login/
+ 2283  27/11/2026 12:16:45  curl -s -o /dev/null -w "Nom d'hôte inconnu : %{http_code}\n" -H "Host: inconnu.test" http://$(minikube ip):30396/
+ 2284  27/11/2026 12:22:40  kubectl exec -n ecommerce-r-27-11-2026 mariadb-r-27-11-2026-0 -- sh -c   'mariadb -uroot -p"$MARIADB_ROOT_PASSWORD" -e "SELECT id, email, montant_centimes, cree_le FROM shop_db.commandes;"'
+ 2285  27/11/2026 12:22:46  kubectl logs -n ecommerce-r-27-11-2026 -l app=boutique-r-27-11-2026 --tail=-1 --prefix > logs/k8s-boutique-paiement-r-27-11-2026.log
+ 2286  27/11/2026 12:22:46  grep -E "payer|succes" logs/k8s-boutique-paiement-r-27-11-2026.log
+ 2287  27/11/2026 12:26:14  git add logs/
+ 2288  27/11/2026 12:26:20  git commit -m "test(stripe): paiement de test validé via la Gateway (commande enregistrée en base)"
+ 2289  27/11/2026 12:26:24  git push
+ 2290  27/11/2026 12:32:18  NS=ecommerce-r-27-11-2026
+ 2291  27/11/2026 12:32:18  ( for i in $(seq 1 40); do curl -s -o /dev/null -w "%{http_code}\n" -H "Host: boutique.212.227.20.231.nip.io" http://$(minikube ip):30396/; sleep 0.5; done ) > /tmp/test-resilience.txt &
+ 2292  27/11/2026 12:32:18  sleep 3
+ 2293  27/11/2026 12:32:21  kubectl delete pod -n $NS $(kubectl get pod -n $NS -l app=boutique-r-27-11-2026 -o name | head -2 | cut -d/ -f2) --wait=false
+ 2294  27/11/2026 12:32:21  kubectl delete pod -n $NS $(kubectl get pod -n $NS -l app=panier-api-r-27-11-2026 -o name | head -1 | cut -d/ -f2) --wait=false
+ 2295  27/11/2026 12:32:22  wait
+ 2296  27/11/2026 12:32:44  echo "=== Résultat des 40 requêtes (code HTTP : nombre) ==="
+ 2297  27/11/2026 12:32:44  sort /tmp/test-resilience.txt | uniq -c
+ 2298  27/11/2026 12:32:51  kubectl get pods -n $NS -l 'app in (boutique-r-27-11-2026,panier-api-r-27-11-2026)'
+ 2299  27/11/2026 12:33:26  kubectl delete pod -n $NS mariadb-r-27-11-2026-0
+ 2300  27/11/2026 12:33:27  kubectl wait --for=condition=Ready pod/mariadb-r-27-11-2026-0 -n $NS --timeout=180s
+ 2301  27/11/2026 12:33:33  kubectl exec -n $NS mariadb-r-27-11-2026-0 -- sh -c   'mariadb -uroot -p"$MARIADB_ROOT_PASSWORD" -e "SELECT id, email, montant_centimes FROM shop_db.commandes;"'
+ 2302  27/11/2026 12:34:26  cp /tmp/test-resilience.txt logs/test-resilience-requetes-r-27-11-2026.log
+ 2303  27/11/2026 12:34:31  git add logs/
+ 2304  27/11/2026 12:34:36  git commit -m "test(resilience): suppression de pods sans coupure (40/40 requêtes OK) et persistance MariaDB"
+ 2305  27/11/2026 12:34:44  git push
+ 2306  27/11/2026 12:39:57  cd ~/e5-kubernetes-r-27-11-2026
+ 2307  27/11/2026 12:40:02  history > logs/history-projet-RIVAS-FABIEN.log
