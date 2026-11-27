@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: from-gateway-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  podSelector:
+    matchExpressions:
+    - {key: app, operator: In, values: [boutique-r-27-11-2026, backoffice-r-27-11-2026]}
+  policyTypes: [Ingress]
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels: {kubernetes.io/metadata.name: envoy-gateway-system}
+    ports:
+    - {protocol: TCP, port: 5000}
+    - {protocol: TCP, port: 5005}

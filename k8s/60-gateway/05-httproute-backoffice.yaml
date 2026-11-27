@@ -1,0 +1,15 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: route-backoffice-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  parentRefs:
+  - name: gateway-r-27-11-2026
+  hostnames: [admin.212.227.20.231.nip.io]
+  rules:
+  - matches:
+    - path: {type: PathPrefix, value: /}
+    backendRefs:
+    - name: backoffice-r-27-11-2026
+      port: 80
