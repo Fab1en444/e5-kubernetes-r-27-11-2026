@@ -1,0 +1,30 @@
+[pod/backoffice-r-27-11-2026-85555fc95f-49vv8/backoffice] [2026-11-27 09:54:37 +0000] [1] [INFO] Starting gunicorn 23.0.0
+[pod/backoffice-r-27-11-2026-85555fc95f-49vv8/backoffice] [2026-11-27 09:54:37 +0000] [1] [INFO] Listening at: http://0.0.0.0:5005 (1)
+[pod/backoffice-r-27-11-2026-85555fc95f-49vv8/backoffice] [2026-11-27 09:54:37 +0000] [1] [INFO] Using worker: gthread
+[pod/backoffice-r-27-11-2026-85555fc95f-49vv8/backoffice] [2026-11-27 09:54:37 +0000] [7] [INFO] Booting worker with pid: 7
+[pod/backoffice-r-27-11-2026-85555fc95f-49vv8/backoffice] 192.168.49.2 - - [27/Nov/2026:09:54:39 +0000] "GET /login/ HTTP/1.1" 200 4991 "-" "kube-probe/1.37"
+[pod/backoffice-r-27-11-2026-85555fc95f-49vv8/backoffice] 192.168.49.2 - - [27/Nov/2026:09:54:40 +0000] "GET /login/ HTTP/1.1" 200 4991 "-" "kube-probe/1.37"
+[pod/backoffice-r-27-11-2026-85555fc95f-49vv8/backoffice] 192.168.49.2 - - [27/Nov/2026:09:54:50 +0000] "GET /login/ HTTP/1.1" 200 4991 "-" "kube-probe/1.37"
+[pod/backoffice-r-27-11-2026-85555fc95f-49vv8/backoffice] 192.168.49.2 - - [27/Nov/2026:09:54:53 +0000] "GET /login/ HTTP/1.1" 200 4991 "-" "kube-probe/1.37"
+[pod/backoffice-r-27-11-2026-85555fc95f-49vv8/backoffice] 192.168.49.2 - - [27/Nov/2026:09:55:00 +0000] "GET /login/ HTTP/1.1" 200 4991 "-" "kube-probe/1.37"
+[pod/backoffice-r-27-11-2026-85555fc95f-49vv8/backoffice] 127.0.0.1 - - [27/Nov/2026:09:55:10 +0000] "GET /login/ HTTP/1.1" 200 4991 "-" "curl/7.88.1"
+[pod/backoffice-r-27-11-2026-85555fc95f-49vv8/backoffice] 127.0.0.1 - - [27/Nov/2026:09:55:10 +0000] "GET /static/assets/css/style.css HTTP/1.1" 200 0 "-" "curl/7.88.1"
+[pod/backoffice-r-27-11-2026-85555fc95f-49vv8/backoffice] 127.0.0.1 - - [27/Nov/2026:09:55:10 +0000] "GET / HTTP/1.1" 302 0 "-" "curl/7.88.1"
+[pod/backoffice-r-27-11-2026-85555fc95f-65hpn/backoffice] [2026-11-27 09:54:37 +0000] [1] [INFO] Starting gunicorn 23.0.0
+[pod/backoffice-r-27-11-2026-85555fc95f-65hpn/backoffice] [2026-11-27 09:54:37 +0000] [1] [INFO] Listening at: http://0.0.0.0:5005 (1)
+[pod/backoffice-r-27-11-2026-85555fc95f-65hpn/backoffice] [2026-11-27 09:54:37 +0000] [1] [INFO] Using worker: gthread
+[pod/backoffice-r-27-11-2026-85555fc95f-65hpn/backoffice] [2026-11-27 09:54:37 +0000] [6] [INFO] Booting worker with pid: 6
+[pod/backoffice-r-27-11-2026-85555fc95f-65hpn/backoffice] 192.168.49.2 - - [27/Nov/2026:09:54:39 +0000] "GET /login/ HTTP/1.1" 200 4991 "-" "kube-probe/1.37"
+[pod/backoffice-r-27-11-2026-85555fc95f-65hpn/backoffice] 192.168.49.2 - - [27/Nov/2026:09:54:40 +0000] "GET /login/ HTTP/1.1" 200 4991 "-" "kube-probe/1.37"
+[pod/backoffice-r-27-11-2026-85555fc95f-65hpn/backoffice] 192.168.49.2 - - [27/Nov/2026:09:54:50 +0000] "GET /login/ HTTP/1.1" 200 4991 "-" "kube-probe/1.37"
+[pod/backoffice-r-27-11-2026-85555fc95f-65hpn/backoffice] 192.168.49.2 - - [27/Nov/2026:09:54:53 +0000] "GET /login/ HTTP/1.1" 200 4991 "-" "kube-probe/1.37"
+[pod/backoffice-r-27-11-2026-85555fc95f-65hpn/backoffice] 192.168.49.2 - - [27/Nov/2026:09:55:00 +0000] "GET /login/ HTTP/1.1" 200 4991 "-" "kube-probe/1.37"
+[pod/backoffice-r-27-11-2026-85555fc95f-jb7zc/backoffice] [2026-11-27 09:54:37 +0000] [1] [INFO] Starting gunicorn 23.0.0
+[pod/backoffice-r-27-11-2026-85555fc95f-jb7zc/backoffice] [2026-11-27 09:54:37 +0000] [1] [INFO] Listening at: http://0.0.0.0:5005 (1)
+[pod/backoffice-r-27-11-2026-85555fc95f-jb7zc/backoffice] [2026-11-27 09:54:37 +0000] [1] [INFO] Using worker: gthread
+[pod/backoffice-r-27-11-2026-85555fc95f-jb7zc/backoffice] [2026-11-27 09:54:37 +0000] [7] [INFO] Booting worker with pid: 7
+[pod/backoffice-r-27-11-2026-85555fc95f-jb7zc/backoffice] 192.168.49.2 - - [27/Nov/2026:09:54:39 +0000] "GET /login/ HTTP/1.1" 200 4991 "-" "kube-probe/1.37"
+[pod/backoffice-r-27-11-2026-85555fc95f-jb7zc/backoffice] 192.168.49.2 - - [27/Nov/2026:09:54:40 +0000] "GET /login/ HTTP/1.1" 200 4991 "-" "kube-probe/1.37"
+[pod/backoffice-r-27-11-2026-85555fc95f-jb7zc/backoffice] 192.168.49.2 - - [27/Nov/2026:09:54:50 +0000] "GET /login/ HTTP/1.1" 200 4991 "-" "kube-probe/1.37"
+[pod/backoffice-r-27-11-2026-85555fc95f-jb7zc/backoffice] 192.168.49.2 - - [27/Nov/2026:09:54:53 +0000] "GET /login/ HTTP/1.1" 200 4991 "-" "kube-probe/1.37"
+[pod/backoffice-r-27-11-2026-85555fc95f-jb7zc/backoffice] 192.168.49.2 - - [27/Nov/2026:09:55:00 +0000] "GET /login/ HTTP/1.1" 200 4991 "-" "kube-probe/1.37"

@@ -15,6 +15,7 @@ gen() { openssl rand -hex 16; }
 [ -f secrets/backoffice-db.env ] || printf "DB_NAME=backoffice_db\nDB_USER=backoffice_user\nDB_PASSWORD=%s\n" "$(gen)" > secrets/backoffice-db.env
 [ -f secrets/redis.env ] || echo "REDIS_PASSWORD=$(gen)" > secrets/redis.env
 [ -f secrets/boutique-app.env ] || echo "FLASK_SECRET_KEY=$(openssl rand -hex 32)" > secrets/boutique-app.env
+[ -f secrets/backoffice-app.env ] || { echo "SECRET_KEY=$(gen)$(gen)"; echo "DJANGO_SUPERUSER_PASSWORD=$(gen)"; } > secrets/backoffice-app.env
 chmod 600 secrets/*.env
 
 for f in secrets/*.env; do

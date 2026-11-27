@@ -1,0 +1,10 @@
+.git
+.env
+env.sample
+*.sqlite3
+__pycache__/
+*.pyc
+nginx/
+docker-compose.yml
+deployer.json
+log.json

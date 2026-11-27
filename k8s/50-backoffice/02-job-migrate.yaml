@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: backoffice-migrate-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: backoffice-r-27-11-2026}
+spec:
+  backoffLimit: 6
+  template:
+    metadata:
+      labels: {app: backoffice-migrate-r-27-11-2026, acces-mariadb: "true"}
+    spec:
+      restartPolicy: OnFailure
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+      - name: migrate
+        image: localhost:5000/backoffice-r-27-11-2026:1.0
+        command: ["sh", "-c", "python manage.py migrate --noinput && (python manage.py createsuperuser --noinput || true)"]
+        envFrom:
+        - configMapRef: {name: backoffice-config-r-27-11-2026}
+        - secretRef: {name: backoffice-app-secret-r-27-11-2026}
+        env:
+        - name: DB_NAME
+          valueFrom: {secretKeyRef: {name: backoffice-db-secret-r-27-11-2026, key: DB_NAME}}
+        - name: DB_USERNAME
+          valueFrom: {secretKeyRef: {name: backoffice-db-secret-r-27-11-2026, key: DB_USER}}
+        - name: DB_PASS
+          valueFrom: {secretKeyRef: {name: backoffice-db-secret-r-27-11-2026, key: DB_PASSWORD}}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: {drop: [ALL]}
+        resources:
+          requests: {cpu: 50m, memory: 96Mi}
+          limits: {cpu: 300m, memory: 256Mi}

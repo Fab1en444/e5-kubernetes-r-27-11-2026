@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backoffice-config-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: backoffice-r-27-11-2026, tier: backoffice}
+data:
+  DB_ENGINE: mysql
+  DB_HOST: mariadb-r-27-11-2026
+  DB_PORT: "3306"
+  DEBUG: "False"
+  SERVER: admin.212.227.20.231.nip.io
+  DJANGO_SUPERUSER_USERNAME: admin
+  DJANGO_SUPERUSER_EMAIL: admin@techshop.local

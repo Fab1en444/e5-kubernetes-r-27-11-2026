@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: backoffice-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: backoffice-r-27-11-2026, tier: backoffice}
+spec:
+  selector: {app: backoffice-r-27-11-2026}
+  ports:
+  - name: http
+    port: 80
+    targetPort: http

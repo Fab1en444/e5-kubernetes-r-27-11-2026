@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backoffice-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: backoffice-r-27-11-2026, tier: backoffice}
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: {maxSurge: 1, maxUnavailable: 0}
+  selector:
+    matchLabels: {app: backoffice-r-27-11-2026}
+  template:
+    metadata:
+      labels:
+        app: backoffice-r-27-11-2026
+        tier: backoffice
+        acces-mariadb: "true"
+    spec:
+      terminationGracePeriodSeconds: 20
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+      - name: backoffice
+        image: localhost:5000/backoffice-r-27-11-2026:1.0
+        ports:
+        - {name: http, containerPort: 5005}
+        envFrom:
+        - configMapRef: {name: backoffice-config-r-27-11-2026}
+        - secretRef: {name: backoffice-app-secret-r-27-11-2026}
+        env:
+        - name: DB_NAME
+          valueFrom: {secretKeyRef: {name: backoffice-db-secret-r-27-11-2026, key: DB_NAME}}
+        - name: DB_USERNAME
+          valueFrom: {secretKeyRef: {name: backoffice-db-secret-r-27-11-2026, key: DB_USER}}
+        - name: DB_PASS
+          valueFrom: {secretKeyRef: {name: backoffice-db-secret-r-27-11-2026, key: DB_PASSWORD}}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: {drop: [ALL]}
+        startupProbe:
+          httpGet:
+            path: /login/
+            port: http
+            httpHeaders: [{name: Host, value: localhost}]
+          periodSeconds: 3
+          failureThreshold: 20
+        readinessProbe:
+          httpGet:
+            path: /login/
+            port: http
+            httpHeaders: [{name: Host, value: localhost}]
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /login/
+            port: http
+            httpHeaders: [{name: Host, value: localhost}]
+          periodSeconds: 20
+        lifecycle:
+          preStop:
+            exec: {command: ["sleep", "5"]}
+        resources:
+          requests: {cpu: 50m, memory: 96Mi}
+          limits: {cpu: 400m, memory: 256Mi}
+        volumeMounts:
+        - {name: tmp, mountPath: /tmp}
+      volumes:
+      - name: tmp
+        emptyDir: {medium: Memory, sizeLimit: 16Mi}
