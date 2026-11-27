@@ -1,0 +1,9 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: boutique-pdb-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels: {app: boutique-r-27-11-2026}

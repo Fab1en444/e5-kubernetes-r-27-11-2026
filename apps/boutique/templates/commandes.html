@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block contenu %}
+<h1>Commandes payées</h1>
+<table>
+  <tr><th>N°</th><th>Date</th><th>Email</th><th>Montant</th></tr>
+  {% for c in commandes %}
+  <tr><td>{{ c.id }}</td><td>{{ c.cree_le }}</td><td>{{ c.email }}</td><td>{{ c.montant_centimes | euros }}</td></tr>
+  {% else %}
+  <tr><td colspan="4">Aucune commande pour le moment.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>TechShop - E5</title>
+  <style>
+    body { margin: 0; font-family: sans-serif; background: #f4f6fb; color: #1f2937; }
+    header { background: #1e293b; padding: 15px 30px; }
+    header a { color: #fff; text-decoration: none; margin-right: 25px; font-weight: bold; }
+    main { max-width: 950px; margin: 25px auto; padding: 0 20px; }
+    .grille { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .carte, table { background: #fff; border-radius: 10px; padding: 18px; box-shadow: 0 2px 6px #0001; }
+    table { width: 100%; border-collapse: collapse; } td, th { padding: 10px; text-align: left; }
+    button { background: #4f46e5; color: #fff; border: 0; border-radius: 6px; padding: 10px 15px; cursor: pointer; }
+    .info { background: #fef3c7; padding: 10px 30px; }
+    .message { background: #dcfce7; padding: 12px; border-radius: 6px; margin-bottom: 15px; }
+    footer { text-align: center; color: #6b7280; font-size: 13px; margin: 30px; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="{{ url_for('catalogue') }}">🛒 TechShop</a>
+    <a href="{{ url_for('panier') }}">Panier</a>
+    <a href="{{ url_for('commandes') }}">Commandes</a>
+  </header>
+  <div class="info">🧪 Mode test Stripe : carte <b>4242 4242 4242 4242</b>, date future, CVC quelconque.</div>
+  <main>
+    {% for message in get_flashed_messages() %}<div class="message">{{ message }}</div>{% endfor %}
+    {% block contenu %}{% endblock %}
+  </main>
+  <footer>Projet E5 - r-27-11-2026 - page servie par le pod <b>{{ pod }}</b></footer>
+</body>
+</html>

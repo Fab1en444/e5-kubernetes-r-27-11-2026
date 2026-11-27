@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: boutique-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: boutique-r-27-11-2026, tier: frontend}
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: {maxSurge: 1, maxUnavailable: 0}
+  selector:
+    matchLabels: {app: boutique-r-27-11-2026}
+  template:
+    metadata:
+      labels:
+        app: boutique-r-27-11-2026
+        tier: frontend
+        acces-mariadb: "true"
+        acces-panier-api: "true"
+        acces-stripe: "true"
+    spec:
+      terminationGracePeriodSeconds: 20
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+      - name: boutique
+        image: localhost:5000/boutique-r-27-11-2026:1.0
+        ports:
+        - {name: http, containerPort: 5000}
+        envFrom:
+        - configMapRef: {name: boutique-config-r-27-11-2026}
+        - secretRef: {name: shop-db-secret-r-27-11-2026}
+        - secretRef: {name: boutique-app-secret-r-27-11-2026}
+        - secretRef: {name: stripe-secret-r-27-11-2026}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: {drop: [ALL]}
+        startupProbe:
+          httpGet: {path: /healthz, port: http}
+          periodSeconds: 3
+          failureThreshold: 20
+        readinessProbe:
+          httpGet: {path: /readyz, port: http}
+          periodSeconds: 10
+        livenessProbe:
+          httpGet: {path: /healthz, port: http}
+          periodSeconds: 20
+        lifecycle:
+          preStop:
+            exec: {command: ["sleep", "5"]}
+        resources:
+          requests: {cpu: 50m, memory: 96Mi}
+          limits: {cpu: 400m, memory: 192Mi}
+        volumeMounts:
+        - {name: tmp, mountPath: /tmp}
+      volumes:
+      - name: tmp
+        emptyDir: {medium: Memory, sizeLimit: 16Mi}

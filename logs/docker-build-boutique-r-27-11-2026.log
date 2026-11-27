@@ -1,0 +1,121 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 733B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/python:3.12-slim
+#2 DONE 0.8s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 59B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 10.23kB done
+#4 DONE 0.0s
+
+#5 [builder 1/4] FROM docker.io/library/python:3.12-slim@sha256:191083cdf6c7bda8c76158983163ead5d5cf7b77cf3033e805bb0f5296f51b4b
+#5 resolve docker.io/library/python:3.12-slim@sha256:191083cdf6c7bda8c76158983163ead5d5cf7b77cf3033e805bb0f5296f51b4b done
+#5 DONE 0.0s
+
+#6 [builder 2/4] WORKDIR /app
+#6 CACHED
+
+#7 [builder 3/4] COPY requirements.txt .
+#7 DONE 0.0s
+
+#8 [builder 4/4] RUN python -m venv /venv && /venv/bin/pip install --no-cache-dir -r requirements.txt
+#8 2.528 Collecting Flask==3.1.0 (from -r requirements.txt (line 1))
+#8 2.554   Downloading flask-3.1.0-py3-none-any.whl.metadata (2.7 kB)
+#8 2.573 Collecting gunicorn==23.0.0 (from -r requirements.txt (line 2))
+#8 2.580   Downloading gunicorn-23.0.0-py3-none-any.whl.metadata (4.4 kB)
+#8 2.776 Collecting SQLAlchemy==2.0.36 (from -r requirements.txt (line 3))
+#8 2.783   Downloading SQLAlchemy-2.0.36-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (9.7 kB)
+#8 2.799 Collecting PyMySQL==1.1.1 (from -r requirements.txt (line 4))
+#8 2.811   Downloading PyMySQL-1.1.1-py3-none-any.whl.metadata (4.4 kB)
+#8 2.828 Collecting requests==2.32.3 (from -r requirements.txt (line 5))
+#8 2.835   Downloading requests-2.32.3-py3-none-any.whl.metadata (4.6 kB)
+#8 2.882 Collecting stripe==11.4.1 (from -r requirements.txt (line 6))
+#8 2.891   Downloading stripe-11.4.1-py2.py3-none-any.whl.metadata (2.7 kB)
+#8 2.906 Collecting Werkzeug>=3.1 (from Flask==3.1.0->-r requirements.txt (line 1))
+#8 2.914   Downloading werkzeug-3.1.9-py3-none-any.whl.metadata (4.1 kB)
+#8 2.926 Collecting Jinja2>=3.1.2 (from Flask==3.1.0->-r requirements.txt (line 1))
+#8 2.933   Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+#8 2.943 Collecting itsdangerous>=2.2 (from Flask==3.1.0->-r requirements.txt (line 1))
+#8 2.952   Downloading itsdangerous-2.2.0-py3-none-any.whl.metadata (1.9 kB)
+#8 2.966 Collecting click>=8.1.3 (from Flask==3.1.0->-r requirements.txt (line 1))
+#8 2.972   Downloading click-8.5.1-py3-none-any.whl.metadata (2.6 kB)
+#8 2.981 Collecting blinker>=1.9 (from Flask==3.1.0->-r requirements.txt (line 1))
+#8 2.988   Downloading blinker-1.9.0-py3-none-any.whl.metadata (1.6 kB)
+#8 3.002 Collecting packaging (from gunicorn==23.0.0->-r requirements.txt (line 2))
+#8 3.008   Downloading packaging-26.4-py3-none-any.whl.metadata (3.5 kB)
+#8 3.026 Collecting typing-extensions>=4.6.0 (from SQLAlchemy==2.0.36->-r requirements.txt (line 3))
+#8 3.033   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+#8 3.106 Collecting greenlet!=0.4.17 (from SQLAlchemy==2.0.36->-r requirements.txt (line 3))
+#8 3.113   Downloading greenlet-3.5.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (3.8 kB)
+#8 3.221 Collecting charset-normalizer<4,>=2 (from requests==2.32.3->-r requirements.txt (line 5))
+#8 3.234   Downloading charset_normalizer-3.5.3-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (43 kB)
+#8 3.252 Collecting idna<4,>=2.5 (from requests==2.32.3->-r requirements.txt (line 5))
+#8 3.259   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+#8 3.277 Collecting urllib3<3,>=1.21.1 (from requests==2.32.3->-r requirements.txt (line 5))
+#8 3.285   Downloading urllib3-2.8.0-py3-none-any.whl.metadata (7.4 kB)
+#8 3.301 Collecting certifi>=2017.4.17 (from requests==2.32.3->-r requirements.txt (line 5))
+#8 3.308   Downloading certifi-2026.11.20-py3-none-any.whl.metadata (2.5 kB)
+#8 3.352 Collecting MarkupSafe>=2.0 (from Jinja2>=3.1.2->Flask==3.1.0->-r requirements.txt (line 1))
+#8 3.359   Downloading markupsafe-3.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+#8 3.372 Downloading flask-3.1.0-py3-none-any.whl (102 kB)
+#8 3.384 Downloading gunicorn-23.0.0-py3-none-any.whl (85 kB)
+#8 3.396 Downloading SQLAlchemy-2.0.36-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.2 MB)
+#8 3.420    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.2/3.2 MB 165.5 MB/s eta 0:00:00
+#8 3.427 Downloading PyMySQL-1.1.1-py3-none-any.whl (44 kB)
+#8 3.434 Downloading requests-2.32.3-py3-none-any.whl (64 kB)
+#8 3.445 Downloading stripe-11.4.1-py2.py3-none-any.whl (1.6 MB)
+#8 3.451    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.6/1.6 MB 493.6 MB/s eta 0:00:00
+#8 3.458 Downloading blinker-1.9.0-py3-none-any.whl (8.5 kB)
+#8 3.466 Downloading certifi-2026.11.20-py3-none-any.whl (127 kB)
+#8 3.473 Downloading charset_normalizer-3.5.3-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (257 kB)
+#8 3.480 Downloading click-8.5.1-py3-none-any.whl (126 kB)
+#8 3.487 Downloading greenlet-3.5.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (621 kB)
+#8 3.489    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 621.4/621.4 kB 611.0 MB/s eta 0:00:00
+#8 3.496 Downloading idna-3.20-py3-none-any.whl (69 kB)
+#8 3.503 Downloading itsdangerous-2.2.0-py3-none-any.whl (16 kB)
+#8 3.510 Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+#8 3.517 Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+#8 3.523 Downloading urllib3-2.8.0-py3-none-any.whl (135 kB)
+#8 3.530 Downloading werkzeug-3.1.9-py3-none-any.whl (228 kB)
+#8 3.537 Downloading packaging-26.4-py3-none-any.whl (140 kB)
+#8 3.544 Downloading markupsafe-3.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+#8 3.575 Installing collected packages: urllib3, typing-extensions, PyMySQL, packaging, MarkupSafe, itsdangerous, idna, greenlet, click, charset-normalizer, certifi, blinker, Werkzeug, SQLAlchemy, requests, Jinja2, gunicorn, stripe, Flask
+#8 5.448 Successfully installed Flask-3.1.0 Jinja2-3.1.6 MarkupSafe-3.0.4 PyMySQL-1.1.1 SQLAlchemy-2.0.36 Werkzeug-3.1.9 blinker-1.9.0 certifi-2026.11.20 charset-normalizer-3.5.3 click-8.5.1 greenlet-3.5.6 gunicorn-23.0.0 idna-3.20 itsdangerous-2.2.0 packaging-26.4 requests-2.32.3 stripe-11.4.1 typing-extensions-4.16.0 urllib3-2.8.0
+#8 5.505 
+#8 5.505 [notice] A new release of pip is available: 25.0.1 -> 26.3
+#8 5.505 [notice] To update, run: python -m pip install --upgrade pip
+#8 DONE 5.6s
+
+#9 [stage-1 2/6] RUN useradd -r -u 10001 appuser
+#9 CACHED
+
+#10 [stage-1 3/6] WORKDIR /app
+#10 CACHED
+
+#11 [stage-1 4/6] COPY --from=builder /venv /venv
+#11 DONE 0.4s
+
+#12 [stage-1 5/6] COPY app.py init_db.py ./
+#12 DONE 0.0s
+
+#13 [stage-1 6/6] COPY templates/ templates/
+#13 DONE 0.0s
+
+#14 exporting to image
+#14 exporting layers
+#14 exporting layers 1.4s done
+#14 exporting manifest sha256:828a7c14ce8e2b6b0a65d40ce00d518d517570c3b2e8e8f6976b230bfc4a3347 done
+#14 exporting config sha256:f43ea11d842d1afc2712327dee4a724db66edd547db9c9996850b3c9b2fe305f done
+#14 exporting attestation manifest sha256:8d809b4b7fbf49e1b20ede84d6d46ace3c0870b3b737542527bf37f2c19ff708 done
+#14 exporting manifest list sha256:a0642ee3c64ea87363df2e5d6229dd3392df2114a364441627cdd8f82e382083 done
+#14 naming to localhost:5000/boutique-r-27-11-2026:1.0 done
+#14 unpacking to localhost:5000/boutique-r-27-11-2026:1.0
+#14 unpacking to localhost:5000/boutique-r-27-11-2026:1.0 0.5s done
+#14 DONE 1.9s

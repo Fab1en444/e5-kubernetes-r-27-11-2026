@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: boutique-init-db-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: boutique-r-27-11-2026}
+spec:
+  backoffLimit: 6
+  template:
+    metadata:
+      labels: {app: boutique-init-db-r-27-11-2026, acces-mariadb: "true"}
+    spec:
+      restartPolicy: OnFailure
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+      - name: init-db
+        image: localhost:5000/boutique-r-27-11-2026:1.0
+        command: ["python", "init_db.py"]
+        envFrom:
+        - configMapRef: {name: boutique-config-r-27-11-2026}
+        - secretRef: {name: shop-db-secret-r-27-11-2026}
+        - secretRef: {name: boutique-app-secret-r-27-11-2026}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: {drop: [ALL]}
+        resources:
+          requests: {cpu: 50m, memory: 64Mi}
+          limits: {cpu: 200m, memory: 128Mi}

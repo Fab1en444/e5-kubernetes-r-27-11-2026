@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block contenu %}
+<h1>Catalogue</h1>
+<div class="grille">
+  {% for p in produits %}
+  <div class="carte">
+    <h2>{{ p.emoji }} {{ p.nom }}</h2>
+    <p>{{ p.description }}</p>
+    <p><b>{{ p.prix_centimes | euros }}</b></p>
+    <form method="post" action="{{ url_for('ajouter', produit_id=p.id) }}"><button>Ajouter au panier</button></form>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
