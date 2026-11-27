@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb-r-27-11-2026
+  namespace: ecommerce-r-27-11-2026
+  labels: {app: mariadb-r-27-11-2026, tier: database}
+spec:
+  serviceName: mariadb-r-27-11-2026
+  replicas: 1
+  selector:
+    matchLabels: {app: mariadb-r-27-11-2026}
+  template:
+    metadata:
+      labels: {app: mariadb-r-27-11-2026, tier: database}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+      - name: mariadb
+        image: mariadb:10.11
+        ports:
+        - {name: mysql, containerPort: 3306}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities: {drop: [ALL]}
+        env:
+        - name: MARIADB_ROOT_HOST
+          value: localhost
+        - name: MARIADB_ROOT_PASSWORD
+          valueFrom: {secretKeyRef: {name: mariadb-root-secret-r-27-11-2026, key: MARIADB_ROOT_PASSWORD}}
+        - name: SHOP_DB_NAME
+          valueFrom: {secretKeyRef: {name: shop-db-secret-r-27-11-2026, key: DB_NAME}}
+        - name: SHOP_DB_USER
+          valueFrom: {secretKeyRef: {name: shop-db-secret-r-27-11-2026, key: DB_USER}}
+        - name: SHOP_DB_PASSWORD
+          valueFrom: {secretKeyRef: {name: shop-db-secret-r-27-11-2026, key: DB_PASSWORD}}
+        - name: BACKOFFICE_DB_NAME
+          valueFrom: {secretKeyRef: {name: backoffice-db-secret-r-27-11-2026, key: DB_NAME}}
+        - name: BACKOFFICE_DB_USER
+          valueFrom: {secretKeyRef: {name: backoffice-db-secret-r-27-11-2026, key: DB_USER}}
+        - name: BACKOFFICE_DB_PASSWORD
+          valueFrom: {secretKeyRef: {name: backoffice-db-secret-r-27-11-2026, key: DB_PASSWORD}}
+        startupProbe:
+          exec: {command: ["healthcheck.sh", "--connect", "--innodb_initialized"]}
+          periodSeconds: 5
+          failureThreshold: 30
+        readinessProbe:
+          exec: {command: ["healthcheck.sh", "--connect", "--innodb_initialized"]}
+          periodSeconds: 10
+        livenessProbe:
+          exec: {command: ["healthcheck.sh", "--connect"]}
+          periodSeconds: 20
+        resources:
+          requests: {cpu: 100m, memory: 192Mi}
+          limits: {cpu: 500m, memory: 384Mi}
+        volumeMounts:
+        - {name: data, mountPath: /var/lib/mysql}
+        - {name: config, mountPath: /etc/mysql/conf.d/custom-r-27-11-2026.cnf, subPath: custom-r-27-11-2026.cnf}
+        - {name: init, mountPath: /docker-entrypoint-initdb.d}
+      volumes:
+      - name: config
+        configMap: {name: mariadb-config-r-27-11-2026}
+      - name: init
+        configMap: {name: mariadb-init-r-27-11-2026}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      labels: {app: mariadb-r-27-11-2026}
+    spec:
+      accessModes: [ReadWriteOnce]
+      resources:
+        requests: {storage: 2Gi}
